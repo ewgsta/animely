@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animely - Aradığınız CLI Aracı</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Quicksand:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    
+    <div class="content-wrapper">
+        <header>
+            <div class="logo">Animely</div>
+            <nav>
+                <a href="#features">Özellikler</a>
+                <a href="#install">Kurulum</a>
+                <a href="https://github.com/ewgsta/animely" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+            </nav>
+        </header>
+
+        <section class="hero">
+            <div class="hero-text">
+                <h1 class="fade-in">Aradığınız şey...</h1>
+                <h2 class="fade-in delay-1">daha iyi bir izleme deneyimi mi?</h2>
+                <p class="fade-in delay-2">Favori animelerinizi doğrudan terminalinizden izleyin ve indirin. Basit, şık, güçlü.</p>
+                <div class="cta-group fade-in delay-3">
+                    <div class="command-box">
+                        <span class="prompt">$</span> npm install -g animely
+                        <button class="copy-btn" onclick="copyCommand()"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual fade-in delay-2">
+                <div class="terminal-window">
+                    <div class="terminal-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="line"><span class="text-green">?</span> ne yapmak istersiniz? <span class="text-cyan">anime ara</span></div>
+                        <div class="line"><span class="text-green">?</span> hangi animeyi aramak istiyorsunuz? <span class="text-cyan">kimi no na wa</span></div>
+                        <div class="line"><span class="text-yellow">1 adet anime bulundu:</span></div>
+                        <div class="line">> Kimi no Na wa (sezon 1, 1 bolum)</div>
+                        <div class="line typing">_</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="feature-card">
+                <i class="fas fa-play-circle"></i>
+                <h3>Anında İzleme</h3>
+                <p>Tam indirmeyi beklemeden VLC Media Player üzerinden anında izleyin.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-download"></i>
+                <h3>Toplu İndirme</h3>
+                <p>Tüm sezonları veya belirli bölüm aralıklarını kolayca indirin.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fab fa-android"></i>
+                <h3>Android Desteği</h3>
+                <p>Termux'ta çalışır! Telefonunuzda izlemek için <code>--android</code> kullanın.</p>
+            </div>
+        </section>
+
+        <section id="install" class="installation">
+            <h2>Yolculuğa Başla</h2>
+            <div class="steps">
+                <div class="step">
+                    <span class="step-number">01</span>
+                    <p>Node.js'in yüklü olduğundan emin olun.</p>
+                </div>
+                <div class="step">
+                    <span class="step-number">02</span>
+                    <p>Kurulum komutunu çalıştırın:</p>
+                    <code>npm install -g animely</code>
+                </div>
+                <div class="step">
+                    <span class="step-number">03</span>
+                    <p>Uygulamayı başlatın:</p>
+                    <code>animely</code>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>ewgsta tarafından <i class="fas fa-heart"></i> ile yapıldı</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

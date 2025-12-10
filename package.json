@@ -1,0 +1,39 @@
+{
+  "name": "animely",
+  "version": "1.0.0",
+  "description": "animely-cli, animely.net üzerinden indirme ve izlemeye yarar",
+  "main": "src/index.js",
+  "type": "module",
+  "bin": {
+    "animely": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node start.js"
+  },
+  "keywords": [
+    "anime",
+    "cli",
+    "download",
+    "watch",
+    "stream"
+  ],
+  "author": "ewgsta",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^9.27.0",
+    "eslint": "^9.27.0",
+    "globals": "^16.1.0"
+  },
+  "dependencies": {
+    "@types/node": "^24.0.10",
+    "axios": "^1.9.0",
+    "bytes": "^3.1.2",
+    "chalk": "^5.4.1",
+    "figures": "^6.1.0",
+    "inquirer": "^12.6.1",
+    "mime-types": "^3.0.1",
+    "ora": "^8.2.0",
+    "strip-ansi": "^7.1.0",
+    "update-notifier": "^7.3.1"
+  }
+}
