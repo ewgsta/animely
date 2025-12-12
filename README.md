@@ -6,6 +6,7 @@ Animely, terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güç
 
 *   **Anında İzleme:** İndirmeyi beklemeden, doğrudan VLC Media Player üzerinden yayın akışı (streaming) yapın.
 *   **Toplu İndirme:** İster tek bir bölümü, ister bir aralığı (örn: 1-12), isterseniz de tüm sezonu tek seferde indirin.
+*   **Birden fazla seriyi indirme:** Sıraya eklediğiniz serilerin hepsini sırayla indirir.
 *   **Gelişmiş Arama:** Anime ismini yazın, en iyi eşleşmeleri anında bulun.
 *   **Android Desteği:** Termux üzerinden çalıştırarak telefonunuzda da kullanabilirsiniz.
 *   **Kullanıcı Dostu Arayüz:** Renkli, anlaşılır ve etkileşimli menüler.
@@ -39,12 +40,4 @@ animely --android
 ## Gereksinimler
 
 *   **Node.js:** Çalıştırma ortamı.
-*   **VLC Media Player:** "İzle" özelliği için gereklidir (Bilgisayar sürümü için). Android sürümünde yüklü herhangi bir video oynatıcı yeterlidir.
-
-## Geliştirici
-
-Bu proje [ewgsta](https://github.com/ewgsta) tarafından geliştirilmiştir.
-
-## Lisans
-
-ISC
+*   **VLC Media Player:** "İzle" özelliği için gereklidir (Bilgisayar sürümü için, yoksa otomatik kurulumu yapar). Android sürümünde yüklü herhangi bir video oynatıcı yeterlidir.

@@ -1,6 +1,6 @@
 {
   "name": "animely",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "animely-cli, animely.net üzerinden indirme ve izlemeye yarar",
   "main": "src/index.js",
   "type": "module",
@@ -11,11 +11,13 @@
     "start": "node start.js"
   },
   "keywords": [
-    "anime",
-    "cli",
-    "download",
-    "watch",
-    "stream"
+      "anime",
+      "izle",
+      "indir",
+      "animely",
+      "animely-cli",
+      "animely.net",
+      "türkanime"
   ],
   "author": "ewgsta",
   "license": "ISC",
