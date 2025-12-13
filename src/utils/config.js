@@ -8,7 +8,7 @@ const configPath = path.join(process.cwd(), "config.animely");
 
 const defaultConfig = {
 	maxConcurrent: 3,
-	downloadDir: "videos"
+	downloadDir: "animely-downloads",
 };
 
 /**
