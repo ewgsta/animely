@@ -10,7 +10,7 @@ import { pipeline } from "stream/promises";
  *
  * @param {string} url
  * @param {string} outputPath
- * @param {{ silent?: boolean, onProgress?: (data: { percent: string, downloaded: number, total: number }) => void }} [options]
+ * @param {{ silent?: boolean, onProgress?: (data: { percent: string, downloaded: number, total: number, speed: number, eta: number }) => void }} [options]
  */
 export async function download(url, outputPath, options = { silent: false }) {
 	if (!url || typeof url !== "string") {
@@ -44,6 +44,7 @@ export async function download(url, outputPath, options = { silent: false }) {
 	const totalLength = parseInt(response.headers["content-length"] || "0", 10);
 
 	let downloaded = 0;
+	let lastDownloaded = 0;
 	let lastTime = Date.now();
 
 	if (!options.silent) {
@@ -61,28 +62,41 @@ export async function download(url, outputPath, options = { silent: false }) {
 		downloaded += chunk.length;
 
 		const now = Date.now();
-		if (now - lastTime >= 1000) {
+		const timeDiff = now - lastTime;
+		if (timeDiff >= 1000) {
+			const speed = (downloaded - lastDownloaded) / (timeDiff / 1000);
+			const remaining = totalLength - downloaded;
+			const eta = speed > 0 ? Math.ceil(remaining / speed) : 0;
+			
 			lastTime = now;
+			lastDownloaded = downloaded;
 
 			if (totalLength) {
 				const percentValue = (downloaded / totalLength) * 100;
 				const percent = percentValue.toFixed(1);
 
 				if (options.onProgress) {
-					options.onProgress({ percent, downloaded, total: totalLength });
+					options.onProgress({ percent, downloaded, total: totalLength, speed, eta });
 				}
 
 				if (!options.silent) {
 					const progressBar = "█".repeat(Math.floor(percentValue / 2)) + "░".repeat(50 - Math.floor(percentValue / 2));
-					process.stdout.write(chalk.gray(`\r[${progressBar}] ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)})`));
+					
+					// Format ETA
+					const h = Math.floor(eta / 3600);
+					const m = Math.floor((eta % 3600) / 60);
+					const s = eta % 60;
+					const etaStr = h > 0 ? `${h}s ${m}dk ${s}sn` : m > 0 ? `${m}dk ${s}sn` : `${s}sn`;
+
+					process.stdout.write(chalk.gray(`\r[${progressBar}] ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)}) - ${bytes(speed)}/s - kalan: ${etaStr}   `));
 				}
 			} else {
 				if (options.onProgress) {
-					options.onProgress({ percent: "0", downloaded, total: 0 });
+					options.onProgress({ percent: "0", downloaded, total: 0, speed, eta: 0 });
 				}
 
 				if (!options.silent) {
-					process.stdout.write(chalk.gray(`\ryukleniyor: ${bytes(downloaded)}`));
+					process.stdout.write(chalk.gray(`\ryukleniyor: ${bytes(downloaded)} - ${bytes(speed)}/s`));
 				}
 			}
 		}

@@ -4,7 +4,7 @@ import path from "path";
 import { execSync } from "child_process";
 import os from "os";
 
-const configPath = path.join(process.cwd(), ".config.animely");
+const configPath = path.join(process.cwd(), "config.animely");
 
 const defaultConfig = {
 	maxConcurrent: 3,
@@ -52,7 +52,7 @@ export function saveConfig(config) {
 		try {
 			execSync(`attrib +h "${configPath}"`);
 		} catch (error) {
-			// Hata varsa amına koyayım
+			// koy götüne rahvan gitsin
 		}
 	}
 }

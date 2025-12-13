@@ -8,7 +8,9 @@ import { spinner } from "./utils/spinner.js";
 import { getConfig, saveConfig } from "./utils/config.js";
 import { runWithConcurrency } from "./utils/concurrency.js";
 import { openInVlc } from "./utils/vlc.js";
+import { execSync, spawnSync } from "child_process";
 import axios from "axios";
+import bytes from "bytes";
 import chalk from "chalk";
 import fs from "fs";
 import inquirer from "inquirer";
@@ -17,7 +19,25 @@ import updateNotifier from "update-notifier";
 
 // Update Notifier
 const pkg = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf-8"));
-updateNotifier({ pkg }).notify();
+const notifier = updateNotifier({ pkg });
+
+if (notifier.update) {
+	console.log(chalk.yellow(`\nguncelleme mevcut: ${chalk.dim(notifier.update.current)} -> ${chalk.green(notifier.update.latest)}`));
+	console.log(chalk.cyan("otomatik guncelleme baslatiliyor..."));
+	try {
+		execSync("npm install -g animely");
+		console.log(chalk.green("guncelleme tamamlandi! uygulama yeniden baslatiliyor..."));
+		
+		const { status } = spawnSync(process.argv[0], process.argv.slice(1), {
+			stdio: "inherit"
+		});
+		
+		process.exit(status ?? 0);
+	} catch (e) {
+		console.log(chalk.red("otomatik guncelleme basarisiz oldu."));
+		console.log(chalk.yellow("lutfen 'npm install -g animely' komutunu elle calistirin."));
+	}
+}
 
 /**
  * Fuzzy search function for anime names
@@ -115,10 +135,14 @@ async function processQueue(queue) {
 	const totalEpisodes = queue.length;
 	const estimatedSizeMB = totalEpisodes * 250; // 250MB estimate
 	const estimatedSizeGB = (estimatedSizeMB / 1024).toFixed(2);
+	
+	const estimatedSeconds = estimatedSizeMB / 4.375;
+	const estimatedMinutes = Math.ceil(estimatedSeconds / 60);
 
 	console.log(chalk.green(`\nindirme kuyrugu`));
 	console.log(chalk.gray(`toplam bolum: ${totalEpisodes}`));
-	console.log(chalk.gray(`tahmini boyut: ~${estimatedSizeGB} GB`));
+	console.log(chalk.gray(`tahmini boyut: ~${estimatedSizeGB} gb`));
+	console.log(chalk.gray(`tahmini sure: ~${estimatedMinutes} dk (35 mbps ile)`));
 
 	const { confirm } = await inquirer.prompt([{
 		type: "confirm",
@@ -148,9 +172,13 @@ async function processQueue(queue) {
 		progressMap.set(key, { 
 			percent: 0, 
 			status: 'bekliyor', 
-			name: `${item.animeName} - ${item.episode.episode_number}` 
+			name: `${item.animeName} - ${item.episode.episode_number}`,
+			speed: 0,
+			eta: 0
 		});
 	});
+
+	let lastLineCount = 0;
 
 	const printProgress = () => {
 		const activeDownloads = Array.from(progressMap.entries())
@@ -160,15 +188,29 @@ async function processQueue(queue) {
 			const progressBar = "█".repeat(Math.floor(parseFloat(data.percent) / 5)) + "░".repeat(20 - Math.floor(parseFloat(data.percent) / 5));
 			// Truncate name if too long
 			const name = data.name.length > 30 ? data.name.substring(0, 27) + "..." : data.name.padEnd(30);
-			return `${name}: [${progressBar}] %${data.percent}`;
+			
+			// Format ETA
+			const eta = data.eta || 0;
+			const h = Math.floor(eta / 3600);
+			const m = Math.floor((eta % 3600) / 60);
+			const s = eta % 60;
+			const etaStr = h > 0 ? `${h}s ${m}dk ${s}sn` : m > 0 ? `${m}dk ${s}sn` : `${s}sn`;
+			const speedStr = data.speed ? bytes(data.speed) + '/s' : '0B/s';
+
+			return `${name}: [${progressBar}] %${data.percent} - ${speedStr} - kalan: ${etaStr}`;
 		}).join("\n");
 		
-		const lines = activeDownloads.length;
-		if (lines > 0) {
-			process.stdout.moveCursor(0, -lines);
+		if (lastLineCount > 0) {
+			process.stdout.moveCursor(0, -lastLineCount);
 			process.stdout.cursorTo(0);
 			process.stdout.clearScreenDown();
+		}
+
+		if (activeDownloads.length > 0) {
 			console.log(output);
+			lastLineCount = activeDownloads.length;
+		} else {
+			lastLineCount = 0;
 		}
 	};
 
@@ -192,7 +234,13 @@ async function processQueue(queue) {
 			await download(item.episode.link, downloadPath, { 
 				silent: true,
 				onProgress: (data) => {
-					progressMap.set(key, { ...progressMap.get(key), status: 'indiriliyor', percent: data.percent });
+					progressMap.set(key, { 
+						...progressMap.get(key), 
+						status: 'indiriliyor', 
+						percent: data.percent,
+						speed: data.speed,
+						eta: data.eta
+					});
 					printProgress();
 				}
 			});
@@ -404,7 +452,7 @@ async function searchAndDownload(animes, downloadQueue) {
 					const hasValidLink = !links.every((link) => !link || link.trim() === "");
 					
 					if (typeof episode_number === "object") {
-						console.warn(`⚠️  Episode ${id} has object episode_number:`, episode_number);
+						console.warn(`⚠️  bolum ${id} nesne tipinde bolum numarasina sahip:`, episode_number);
 					}
 
 					let fansubText = "";
@@ -619,17 +667,16 @@ async function searchAndDownload(animes, downloadQueue) {
 			const response = await axios.get("https://animely.net/api/animes");
 			animes = response.data;
 		} catch (error) {
-			spinner.fail(chalk.red("API'den anime listesi alınamadı. İnternet bağlantınızı kontrol edin."));
-			console.error(chalk.gray(`Hata detayı: ${error.message}`));
+			spinner.fail(chalk.red("anime listesi alinamadi. internet baglantini kontrol et"));
 			return;
 		}
-		
 		spinner.stop();
 
 		const downloadQueue = [];
 
 		while (true) {
 			console.clear();
+
 			console.log([
 				`${chalk.gray(timeFormat())} animely-cli`,
 				`${chalk.gray(timeFormat())} github ${chalk.blue.underline("https://github.com/ewgsta/animely")}`,
