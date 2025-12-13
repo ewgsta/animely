@@ -38,13 +38,21 @@ export function getConfig() {
  * @param {Config} config 
  */
 export function saveConfig(config) {
+	if (os.platform() === "win32" && fs.existsSync(configPath)) {
+		try {
+			execSync(`attrib -h "${configPath}"`);
+		} catch (error) {
+			// Hata varsa amına koyayım
+		}
+	}
+
 	fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8");
 	
 	if (os.platform() === "win32") {
 		try {
 			execSync(`attrib +h "${configPath}"`);
 		} catch (error) {
-			// Olmazsa siktir et amına koyayım.
+			// Hata varsa amına koyayım
 		}
 	}
 }
