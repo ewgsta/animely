@@ -4,11 +4,11 @@ Animely, terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güç
 
 ## Özellikler
 
-    *   **Anında İzleme:** İndirmeyi beklemeden, doğrudan VLC Media Player üzerinden yayın akışı (streaming) yapın.
-    *   **Akıllı İndirme Yöneticisi:**
-    *   **Kaldığı Yerden Devam Etme:** İnternetiniz kesilse veya program kapansa bile indirmeler kaldığı yerden devam eder.
-    *   **Kalıcı Kuyruk:** İndirme kuyruğunuz kaydedilir, programı yeniden başlattığınızda işlemleriniz kaybolmaz.
-    *   **Detaylı İstatistikler:** İndirme sırasında anlık hız, kalan süre ve ilerleme durumunu görün.
+*   **Anında İzleme:** İndirmeyi beklemeden, doğrudan VLC Media Player üzerinden yayın akışı (streaming) yapın.
+*   **Akıllı İndirme Yöneticisi:**
+*   **Kaldığı Yerden Devam Etme:** İnternetiniz kesilse veya program kapansa bile indirmeler kaldığı yerden devam eder.
+*   **Kalıcı Kuyruk:** İndirme kuyruğunuz kaydedilir, programı yeniden başlattığınızda işlemleriniz kaybolmaz.
+*   **Detaylı İstatistikler:** İndirme sırasında anlık hız, kalan süre ve ilerleme durumunu görün.
 *   **Esnek Seçim:** İster tek bir bölümü, ister bir aralığı (örn: 1-12), isterseniz de tüm sezonu tek seferde indirin.
 *   **Otomatik Güncelleme:** Yeni bir sürüm çıktığında sizi uyarır ve otomatik olarak günceller.
 *   **Gelişmiş Arama:** Anime ismini yazın, en iyi eşleşmeleri anında bulun.
