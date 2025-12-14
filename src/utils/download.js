@@ -114,9 +114,21 @@ export async function download(url, outputPath, options = { silent: false }) {
 
 		if (totalLength) {
 			const percent = ((downloaded / totalLength) * 100).toFixed(1);
-			process.stdout.write(chalk.gray(`\rindiriliyor: ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)})`));
+			if (process.stdout.isTTY) {
+				process.stdout.clearLine(0);
+				process.stdout.cursorTo(0);
+				process.stdout.write(chalk.gray(`indiriliyor: ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)})`));
+			} else {
+				process.stdout.write(chalk.gray(`\rindiriliyor: ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)})`));
+			}
 		} else {
-			process.stdout.write(chalk.gray(`\ryukleniyor: ${bytes(downloaded)}`));
+			if (process.stdout.isTTY) {
+				process.stdout.clearLine(0);
+				process.stdout.cursorTo(0);
+				process.stdout.write(chalk.gray(`yukleniyor: ${bytes(downloaded)}`));
+			} else {
+				process.stdout.write(chalk.gray(`\ryukleniyor: ${bytes(downloaded)}`));
+			}
 		}
 	}
 
@@ -150,7 +162,13 @@ export async function download(url, outputPath, options = { silent: false }) {
 					const s = eta % 60;
 					const etaStr = h > 0 ? `${h}s ${m}dk ${s}sn` : m > 0 ? `${m}dk ${s}sn` : `${s}sn`;
 
-					process.stdout.write(chalk.gray(`\r[${progressBar}] ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)}) - ${bytes(speed)}/s - kalan: ${etaStr}   `));
+					if (process.stdout.isTTY) {
+						process.stdout.clearLine(0);
+						process.stdout.cursorTo(0);
+						process.stdout.write(chalk.gray(`[${progressBar}] ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)}) - ${bytes(speed)}/s - kalan: ${etaStr}`));
+					} else {
+						process.stdout.write(chalk.gray(`\r[${progressBar}] ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)}) - ${bytes(speed)}/s - kalan: ${etaStr}   `));
+					}
 				}
 			} else {
 				if (options.onProgress) {
@@ -158,7 +176,13 @@ export async function download(url, outputPath, options = { silent: false }) {
 				}
 
 				if (!options.silent) {
-					process.stdout.write(chalk.gray(`\ryukleniyor: ${bytes(downloaded)} - ${bytes(speed)}/s`));
+					if (process.stdout.isTTY) {
+						process.stdout.clearLine(0);
+						process.stdout.cursorTo(0);
+						process.stdout.write(chalk.gray(`yukleniyor: ${bytes(downloaded)} - ${bytes(speed)}/s`));
+					} else {
+						process.stdout.write(chalk.gray(`\ryukleniyor: ${bytes(downloaded)} - ${bytes(speed)}/s`));
+					}
 				}
 			}
 		}
