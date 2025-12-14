@@ -109,6 +109,7 @@ export async function installVlc() {
 /**
  * Opens the URL in VLC
  * @param {string} url 
+ * @returns {Promise<number|void>}
  */
 export async function openInVlc(url) {
 	if (isAndroid) {

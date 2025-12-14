@@ -1,14 +1,23 @@
 // @ts-check
 import chalk from "chalk";
 
-export function getLink(/** @type {string[]} */ links) {
+/**
+ * @param {string[]} links 
+ * @returns {string}
+ */
+export function getLink(links) {
 	if (!Array.isArray(links)) {
 		return "";
 	}
 	return links.find(link => link && typeof link === "string" && link.trim() !== "") || "";
 }
 
-export function formatName(/** @type {number|string|object} */ number, /** @type {string} */ type) {
+/**
+ * @param {number|string|object} number 
+ * @param {string} type 
+ * @returns {string}
+ */
+export function formatName(number, type) {
 	let episodeNumber;
 	
 	if (typeof number === "object" && number !== null) {

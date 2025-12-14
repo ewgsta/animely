@@ -17,13 +17,52 @@ export async function download(url, outputPath, options = { silent: false }) {
 		throw new Error("gecersiz url");
 	}
 
+	let startByte = 0;
+	let totalLength = 0;
+	let extension = "";
+	let fullPath = "";
+
+	try {
+		const headResponse = await axios.head(url, { timeout: 10000 });
+		if (headResponse.status === 200) {
+			const contentType = headResponse.headers["content-type"] || "video/mp4";
+			extension = mime.extension(contentType) || "mp4";
+			totalLength = parseInt(headResponse.headers["content-length"] || "0", 10);
+			fullPath = `${outputPath}.${extension}`;
+
+			if (fs.existsSync(fullPath)) {
+				const stats = fs.statSync(fullPath);
+				const existingSize = stats.size;
+
+				if (totalLength > 0 && existingSize === totalLength) {
+					if (!options.silent) console.log(chalk.green(`dosya zaten inmis: ${fullPath}`));
+					if (options.onProgress) options.onProgress({ percent: "100", downloaded: totalLength, total: totalLength, speed: 0, eta: 0 });
+					return;
+				}
+
+				if (totalLength > 0 && existingSize < totalLength) {
+					startByte = existingSize;
+					if (!options.silent) console.log(chalk.yellow(`indirme devam ettiriliyor: ${bytes(startByte)} / ${bytes(totalLength)}`));
+				}
+			}
+		}
+	} catch (error) {
+		// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+	}
+
 	let response;
 	try {
+		const headers = {};
+		if (startByte > 0) {
+			headers["Range"] = `bytes=${startByte}-`;
+		}
+
 		response = await axios({
 			method: "get",
 			url,
 			responseType: "stream",
 			timeout: 30000,
+			headers
 		});
 	} catch (error) {
 		if (error.code === "ENOTFOUND") {
@@ -34,21 +73,44 @@ export async function download(url, outputPath, options = { silent: false }) {
 		throw new Error(`indirme baslatilamadi: ${error.message}`);
 	}
 
-	if (response.status !== 200) {
+	if (response.status !== 200 && response.status !== 206) {
 		throw new Error(`sunucu hatasi: ${response.status} ${response.statusText}`);
+	}
+
+	const isResuming = response.status === 206;
+	if (startByte > 0 && !isResuming) {
+		startByte = 0;
 	}
 
 	/** @type {string} */
 	const contentType = response.headers["content-type"] || "video/mp4";
-	const extension = mime.extension(contentType) || "mp4";
-	const totalLength = parseInt(response.headers["content-length"] || "0", 10);
+	if (!extension) {
+		extension = mime.extension(contentType) || "mp4";
+	}
+	if (!fullPath) {
+		fullPath = `${outputPath}.${extension}`;
+	}
 
-	let downloaded = 0;
-	let lastDownloaded = 0;
+	if (isResuming) {
+		const contentRange = response.headers["content-range"];
+		if (contentRange) {
+			const match = contentRange.match(/\/(\d+)$/);
+			if (match) {
+				totalLength = parseInt(match[1], 10);
+			}
+		} else {
+			totalLength = startByte + parseInt(response.headers["content-length"] || "0", 10);
+		}
+	} else {
+		totalLength = parseInt(response.headers["content-length"] || "0", 10);
+	}
+
+	let downloaded = startByte;
+	let lastDownloaded = startByte;
 	let lastTime = Date.now();
 
 	if (!options.silent) {
-		console.log(chalk.cyan("\nindirme basliyor..."));
+		if (!isResuming) console.log(chalk.cyan("\nindirme basliyor..."));
 
 		if (totalLength) {
 			const percent = ((downloaded / totalLength) * 100).toFixed(1);
@@ -102,10 +164,8 @@ export async function download(url, outputPath, options = { silent: false }) {
 		}
 	});
 
-	const fullPath = `${outputPath}.${extension}`;
-
 	try {
-		const writer = fs.createWriteStream(fullPath);
+		const writer = fs.createWriteStream(fullPath, { flags: isResuming ? 'a' : 'w' });
 		await pipeline(response.data, writer);
 
 		if (!options.silent) {
@@ -113,7 +173,7 @@ export async function download(url, outputPath, options = { silent: false }) {
 			console.log(chalk.green(`dosya basariyla kaydedildi: ${fullPath}`));
 		}
 	} catch (error) {
-		if (fs.existsSync(fullPath)) {
+		if (!isResuming && fs.existsSync(fullPath)) {
 			fs.unlinkSync(fullPath);
 		}
 		throw new Error(`dosya yazma hatasi: ${error.message}`);

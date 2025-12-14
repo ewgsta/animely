@@ -25,5 +25,13 @@
  * }} Episode
  */
 
+/**
+ * @typedef {{
+ * id: string;
+ * episode_number: number|string;
+ * link: string;
+ * }} DownloadEpisode
+ */
+
 
 export { };

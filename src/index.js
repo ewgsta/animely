@@ -6,6 +6,7 @@ import { line } from "./functions/variables.js";
 import { download } from "./utils/download.js";
 import { spinner } from "./utils/spinner.js";
 import { getConfig, saveConfig } from "./utils/config.js";
+import { loadQueue, saveQueue } from "./utils/queue.js";
 import { runWithConcurrency } from "./utils/concurrency.js";
 import { openInVlc } from "./utils/vlc.js";
 import { execSync, spawnSync } from "child_process";
@@ -19,7 +20,10 @@ import updateNotifier from "update-notifier";
 
 // Update Notifier
 const pkg = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf-8"));
-const notifier = updateNotifier({ pkg });
+const notifier = updateNotifier({ 
+	pkg,
+	updateCheckInterval: 0
+});
 
 if (notifier.update) {
 	console.log(chalk.yellow(`\nguncelleme mevcut: ${chalk.dim(notifier.update.current)} -> ${chalk.green(notifier.update.latest)}`));
@@ -128,7 +132,7 @@ async function showSettings() {
 }
 
 /**
- * @param {Array<{animeName: string, episode: { id: string, episode_number: number|string, link: string }, dirPath: string, safeAnimeName: string}>} queue
+ * @param {import("./utils/queue.js").QueueItem[]} queue
  */
 async function processQueue(queue) {
 	console.clear();
@@ -247,6 +251,13 @@ async function processQueue(queue) {
 			
 			progressMap.set(key, { ...progressMap.get(key), status: 'tamamlandi', percent: 100 });
 			printProgress();
+
+			// Remove from queue and save
+			const index = queue.indexOf(item);
+			if (index > -1) {
+				queue.splice(index, 1);
+				saveQueue(queue);
+			}
 		} catch (error) {
 			progressMap.set(key, { ...progressMap.get(key), status: 'hata', percent: 0 });
 			printProgress();
@@ -260,7 +271,7 @@ async function processQueue(queue) {
 
 /**
  * @param {import("./jsdoc.js").Anime[]} animes 
- * @param {Array<{animeName: string, episode: { id: string, episode_number: number|string, link: string }, dirPath: string, safeAnimeName: string}>} downloadQueue
+ * @param {import("./utils/queue.js").QueueItem[]} downloadQueue
  */
 async function searchAndDownload(animes, downloadQueue) {
 	let selectedAnime;
@@ -568,6 +579,7 @@ async function searchAndDownload(animes, downloadQueue) {
 				safeAnimeName: safeAnimeName
 			});
 		});
+		saveQueue(downloadQueue);
 		console.log(chalk.green(`${selectedEpisodes.length} bolum kuyruga eklendi.`));
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		return;
@@ -581,7 +593,6 @@ async function searchAndDownload(animes, downloadQueue) {
 		console.log(chalk.cyan(`\n${selectedEpisodes.length} bolum secildi. ayni anda en fazla ${config.maxConcurrent} indirme yapilacak.`));
 	}
 
-	// Initialize progress map for all selected episodes
 	const progressMap = new Map();
 	selectedEpisodes.forEach(ep => {
 		progressMap.set(ep.episode_number, { percent: 0, status: 'bekliyor' });
@@ -676,7 +687,7 @@ async function searchAndDownload(animes, downloadQueue) {
 		}
 		spinner.stop();
 
-		const downloadQueue = [];
+		const downloadQueue = loadQueue();
 
 		while (true) {
 			console.clear();
@@ -688,6 +699,10 @@ async function searchAndDownload(animes, downloadQueue) {
 
 			if (process.argv.includes("--android")) {
 				console.log(chalk.yellow("android icin baslatılıyor"));
+			}
+
+			if (downloadQueue.length > 0) {
+				console.log(chalk.yellow(`\n⚠️  tamamlanmamis ${downloadQueue.length} indirme var!`));
 			}
 
 			console.log(chalk.gray(line.repeat(100)));
@@ -721,10 +736,9 @@ async function searchAndDownload(animes, downloadQueue) {
 				await searchAndDownload(animes, downloadQueue);
 			} else if (action === "start_queue") {
 				await processQueue(downloadQueue);
-				downloadQueue.length = 0;
 			}
 			
-			console.log(""); // Empty line for spacing
+			console.log(""); // boşch
 		}
 
 	} catch (error) {

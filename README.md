@@ -8,7 +8,7 @@ Animely, terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güç
 *   **Toplu İndirme:** İster tek bir bölümü, ister bir aralığı (örn: 1-12), isterseniz de tüm sezonu tek seferde indirin.
 *   **Birden fazla seriyi indirme:** Sıraya eklediğiniz serilerin hepsini sırayla indirir.
 *   **Gelişmiş Arama:** Anime ismini yazın, en iyi eşleşmeleri anında bulun.
-*   **Android Desteği:** Termux üzerinden çalıştırarak telefonunuzda da kullanabilirsiniz.
+~~*   **Android Desteği:** Termux üzerinden çalıştırarak telefonunuzda da kullanabilirsiniz.~~
 *   **Kullanıcı Dostu Arayüz:** Renkli, anlaşılır ve etkileşimli menüler.
 
 ## Kurulum
@@ -29,13 +29,11 @@ Kurulum tamamlandıktan sonra, terminale sadece şunu yazmanız yeterli:
 animely
 ```
 
-### Android (Termux) Kullanımı
+### ~~Android (Termux) Kullanımı~~
 
-Android cihazınızda Termux uygulamasını kullanıyorsanız, video oynatıcıyı (VLC, MX Player vb.) tetiklemek için `--android` parametresini kullanın:
+~~Android cihazınızda Termux uygulamasını kullanıyorsanız, video oynatıcıyı (VLC, MX Player vb.) tetiklemek için `--android` parametresini kullanın:~~
 
-```bash
-animely --android
-```
+~~animely --android~~
 
 ## Gereksinimler
 

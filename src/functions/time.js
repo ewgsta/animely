@@ -1,4 +1,8 @@
 // @ts-check
+/**
+ * @param {Date} [date] 
+ * @returns {string}
+ */
 export function timeFormat(date = new Date()) {
 	try {
 		if (!(date instanceof Date) || isNaN(date.getTime())) {
