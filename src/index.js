@@ -343,19 +343,23 @@ async function searchAndDownload(animes, downloadQueue) {
 	console.log(chalk.green(`\n${selectedAnime.NAME} secildi!`));
 	console.log(chalk.gray(`toplam ${episodes.length} bolum mevcut`));
 
-	const { action } = await inquirer.prompt([{
-		type: "list",
-		name: "action",
-		message: "ne yapmak istersin?",
-		choices: [
-			{ name: "izle", value: "watch" },
-			{ name: "indir", value: "download" }
-		]
-	}]);
+	while (true) {
+		const { action } = await inquirer.prompt([{
+			type: "list",
+			name: "action",
+			message: "ne yapmak istersin?",
+			choices: [
+				{ name: "izle", value: "watch" },
+				{ name: "indir", value: "download" },
+				{ name: "geri don", value: "back" }
+			]
+		}]);
 
-	let selectedEpisodes = [];
+		if (action === "back") return;
 
-	if (action === "watch") {
+		let selectedEpisodes = [];
+
+		if (action === "watch") {
 		while (true) {
 			console.clear();
 			console.log(chalk.green(`\n${selectedAnime.NAME} - izle`));
@@ -400,7 +404,7 @@ async function searchAndDownload(animes, downloadQueue) {
 				],
 			}]);
 
-			if (episode === "back") return;
+			if (episode === "back") break;
 
 			if (!episode.link) {
 				console.log(chalk.red("secilen bolum icin izleme linki bulunamadi."));
@@ -413,11 +417,6 @@ async function searchAndDownload(animes, downloadQueue) {
 				console.log(chalk.green(`${selectedAnime.NAME} — ${episode.episode_number}. bolum vlc'de aciliyor...`));
 				
 				await openInVlc(episode.link);
-				
-				// Wait a bit to ensure VLC starts without immediate error
-				await new Promise(resolve => setTimeout(resolve, 1500));
-				console.log(chalk.blue("bolum oynatiliyor..."));
-				await new Promise(resolve => setTimeout(resolve, 1000));
 				
 			} catch (error) {
 				console.error(chalk.red(`vlc baslatilamadi: ${error.message}`));
@@ -435,9 +434,12 @@ async function searchAndDownload(animes, downloadQueue) {
 			choices: [
 				{ name: "listeden sec (tek tek)", value: "list" },
 				{ name: "aralik gir (orn: 1-12, 15)", value: "range" },
-				{ name: "tumunu indir", value: "all" }
+				{ name: "tumunu indir", value: "all" },
+				{ name: "geri don", value: "back" }
 			]
 		}]);
+
+		if (selectionMethod === "back") continue;
 
 		if (selectionMethod === "list") {
 			console.clear();
@@ -535,12 +537,11 @@ async function searchAndDownload(animes, downloadQueue) {
 				};
 			});
 		}
-	}
 
-	if (!selectedEpisodes || selectedEpisodes.length === 0) {
-		console.log(chalk.yellow("hicbir bolum secilmedi."));
-		return;
-	}
+		if (!selectedEpisodes || selectedEpisodes.length === 0) {
+			console.log(chalk.yellow("hicbir bolum secilmedi."));
+			continue;
+		}
 
 	console.clear();
 
@@ -654,6 +655,9 @@ async function searchAndDownload(animes, downloadQueue) {
 
 	if (selectedEpisodes.length > 1) {
 		spinner.succeed(chalk.bold("tum indirmeler tamamlandi!"));
+	}
+	return;
+		}
 	}
 }
 

@@ -137,10 +137,17 @@ export async function openInVlc(url) {
 
 	console.log(chalk.cyan("vlc baslatiliyor..."));
 	
-	const child = spawn(vlcPath, [url], {
-		detached: true,
-		stdio: "ignore"
-	});
+	return new Promise((resolve, reject) => {
+		const child = spawn(vlcPath, [url], {
+			stdio: "ignore"
+		});
 
-	child.unref();
+		child.on('error', (err) => {
+			reject(err);
+		});
+
+		child.on('close', (code) => {
+			resolve(code);
+		});
+	});
 }
