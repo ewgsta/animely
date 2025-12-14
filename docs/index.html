@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animely - Modern CLI Anime İzleyici</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-gradient"></div>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    
+    <div class="content-wrapper">
+        <header class="glass-panel">
+            <div class="logo">
+                <i class="fas fa-terminal"></i> Animely
+            </div>
+            <nav>
+                <a href="#features">Özellikler</a>
+                <a href="#install">Kurulum</a>
+                <a href="https://github.com/ewgsta/animely" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+                <button id="theme-toggle" class="theme-btn" aria-label="Temayı Değiştir">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </nav>
+        </header>
+
+        <section class="hero">
+            <div class="hero-text">
+                <h1 class="slide-up">Terminalden <span class="gradient-text">Anime</span> Keyfi</h1>
+                <p class="slide-up delay-1">Reklamsız, hızlı ve modern. Favori animelerinizi doğrudan komut satırından izleyin ve indirin.</p>
+                <div class="cta-group slide-up delay-2">
+                    <div class="command-box glass-panel">
+                        <span class="prompt">$</span> <span id="install-command">npm install -g animely</span>
+                        <button class="copy-btn" onclick="copyCommand()" aria-label="Komutu Kopyala">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="copy-feedback">Kopyalandı!</div>
+                </div>
+            </div>
+            <div class="hero-visual slide-up delay-3">
+                <div class="terminal-window glass-panel">
+                    <div class="terminal-header">
+                        <div class="window-controls">
+                            <span class="control red"></span>
+                            <span class="control yellow"></span>
+                            <span class="control green"></span>
+                        </div>
+                        <div class="window-title">animely.exe</div>
+                    </div>
+                    <div class="terminal-body">
+                        <div id="typewriter"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <h2 class="section-title scroll-reveal">Neden Animely?</h2>
+            <div class="features-grid">
+                <div class="feature-card glass-panel scroll-reveal">
+                    <div class="icon-box"><i class="fas fa-play"></i></div>
+                    <h3>Anında İzleme</h3>
+                    <p>İndirmeyi beklemeden VLC üzerinden streaming yapın. Takılmadan, donmadan.</p>
+                </div>
+                <div class="feature-card glass-panel scroll-reveal delay-1">
+                    <div class="icon-box"><i class="fas fa-download"></i></div>
+                    <h3>Akıllı İndirme</h3>
+                    <p>Kaldığı yerden devam etme, toplu indirme ve detaylı istatistikler.</p>
+                </div>
+                <div class="feature-card glass-panel scroll-reveal delay-2">
+                    <div class="icon-box"><i class="fas fa-mobile-alt"></i></div>
+                    <h3>Android Desteği</h3>
+                    <p>Termux ile telefonunuzda da tam performans çalışır.</p>
+                </div>
+                <div class="feature-card glass-panel scroll-reveal delay-3">
+                    <div class="icon-box"><i class="fas fa-sync-alt"></i></div>
+                    <h3>Otomatik Güncelleme</h3>
+                    <p>Her zaman en güncel sürümü kullanın. Güncellemeler otomatik denetlenir.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="install" class="installation">
+            <div class="install-card glass-panel scroll-reveal">
+                <h2>Hemen Başlayın</h2>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Node.js Kurun</h4>
+                            <p>Bilgisayarınızda <a href="https://nodejs.org/" target="_blank" class="text-link">Node.js</a> (v14+) yüklü olmalıdır.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Animely'i Yükleyin</h4>
+                            <div class="code-snippet">npm install -g animely</div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Başlatın</h4>
+                            <div class="code-snippet">animely</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>CC BY-NC-ND 4.0 License &copy;</p>
+            <div class="social-links">
+                <a href="https://github.com/ewgsta/animely" target="_blank"><i class="fab fa-github"></i></a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

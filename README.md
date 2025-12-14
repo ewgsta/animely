@@ -44,3 +44,13 @@ Ana menüden "Ayarlar" seçeneğine giderek:
 
 *   **Node.js:** Çalıştırma ortamı (v14+ önerilir).
 *   **VLC Media Player:** "İzle" özelliği için gereklidir. Bilgisayarınızda yüklü değilse Animely otomatik olarak kurmayı dener veya sizi yönlendirir.
+
+## Lisans
+
+Bu proje [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/) lisansı ile lisanslanmıştır.
+
+Bu lisans altında:
+*   **Paylaş:** Eseri her ortam veya formatta kopyalayabilir ve yeniden dağıtabilirsiniz.
+*   **Atıf:** Uygun referans vermeli, lisansa bağlantı sağlamalı ve değişiklik yapıldıysa bilgi vermelisiniz.
+*   **Ticari Olmayan:** Bu materyali ticari amaçlarla kullanamazsınız.
+*   **Türetilemez:** Eğer materyali karıştırır, aktarır veya üzerine inşa ederseniz, değiştirilmiş materyali dağıtamazsınız.
