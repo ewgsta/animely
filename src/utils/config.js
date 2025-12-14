@@ -1,20 +1,28 @@
 // @ts-check
 import fs from "fs";
 import path from "path";
-import { execSync } from "child_process";
 import os from "os";
 
-const configPath = path.join(process.cwd(), "config.animely");
+const homeDir = os.homedir();
+const configDir = path.join(homeDir, ".animely");
+const configPath = path.join(configDir, "config.json");
+
+// Ensure config directory exists
+if (!fs.existsSync(configDir)) {
+	fs.mkdirSync(configDir, { recursive: true });
+}
 
 const defaultConfig = {
 	maxConcurrent: 3,
-	downloadDir: "animely-downloads",
+	downloadDir: path.join(process.cwd(), "animely-downloads"),
+	defaultPlayer: "", // "vlc" | "mpv"
 };
 
 /**
  * @typedef {Object} Config
  * @property {number} maxConcurrent
  * @property {string} downloadDir
+ * @property {string} defaultPlayer
  */
 
 /**
@@ -38,21 +46,5 @@ export function getConfig() {
  * @param {Config} config 
  */
 export function saveConfig(config) {
-	if (os.platform() === "win32" && fs.existsSync(configPath)) {
-		try {
-			execSync(`attrib -h "${configPath}"`);
-		} catch (error) {
-			// Hata varsa amına koyayım
-		}
-	}
-
 	fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8");
-	
-	if (os.platform() === "win32") {
-		try {
-			execSync(`attrib +h "${configPath}"`);
-		} catch (error) {
-			// koy götüne rahvan gitsin
-		}
-	}
 }

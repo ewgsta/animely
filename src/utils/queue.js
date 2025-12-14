@@ -2,9 +2,15 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { execSync } from "child_process";
 
-const queuePath = path.join(process.cwd(), "queue.animely");
+const homeDir = os.homedir();
+const configDir = path.join(homeDir, ".animely");
+const queuePath = path.join(configDir, "queue.json");
+
+// Ensure config directory exists
+if (!fs.existsSync(configDir)) {
+	fs.mkdirSync(configDir, { recursive: true });
+}
 
 /**
  * @typedef {Object} QueueItem
@@ -34,21 +40,6 @@ export function loadQueue() {
  * @param {QueueItem[]} queue 
  */
 export function saveQueue(queue) {
-	if (os.platform() === "win32" && fs.existsSync(queuePath)) {
-		try {
-			execSync(`attrib -h "${queuePath}"`);
-		} catch (error) {
-			// ignore
-		}
-	}
-
 	fs.writeFileSync(queuePath, JSON.stringify(queue, null, 2), "utf-8");
-
-	if (os.platform() === "win32") {
-		try {
-			execSync(`attrib +h "${queuePath}"`);
-		} catch (error) {
-			// ignore
-		}
-	}
 }
+

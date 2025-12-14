@@ -9,6 +9,8 @@ import { getConfig, saveConfig } from "./utils/config.js";
 import { loadQueue, saveQueue } from "./utils/queue.js";
 import { runWithConcurrency } from "./utils/concurrency.js";
 import { openInVlc } from "./utils/vlc.js";
+import { openInMpv } from "./utils/mpv.js";
+import { initDiscordRpc, setActivity } from "./utils/discord.js";
 import { execSync, spawnSync } from "child_process";
 import axios from "axios";
 import bytes from "bytes";
@@ -18,7 +20,12 @@ import inquirer from "inquirer";
 import path from "path";
 import updateNotifier from "update-notifier";
 
-// Update Notifier
+process.on('SIGINT', () => {
+	console.log(chalk.gray("\ngorusmek uzere!"));
+	process.exit(0);
+});
+
+// güncelleme habercisi yewah
 const pkg = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf-8"));
 const notifier = updateNotifier({ 
 	pkg,
@@ -96,6 +103,7 @@ async function showSettings() {
 		name: "action",
 		message: "degistirmek istediginiz ayari secin:",
 		choices: [
+			{ name: `varsayilan oynatici (su an: ${chalk.yellow(config.defaultPlayer || "secilmedi")})`, value: "defaultPlayer" },
 			{ name: `eszamanli indirme sayisi (su an: ${chalk.yellow(config.maxConcurrent)})`, value: "maxConcurrent" },
 			{ name: `indirme klasoru (su an: ${chalk.yellow(config.downloadDir)})`, value: "downloadDir" },
 			new inquirer.Separator(),
@@ -105,7 +113,19 @@ async function showSettings() {
 
 	if (action === "back") return;
 
-	if (action === "maxConcurrent") {
+	if (action === "defaultPlayer") {
+		const { player } = await inquirer.prompt([{
+			type: "list",
+			name: "player",
+			message: "varsayilan oynaticiyi secin:",
+			choices: [
+				{ name: "VLC Media Player", value: "vlc" },
+				{ name: "MPV Player", value: "mpv" }
+			],
+			default: config.defaultPlayer || "vlc"
+		}]);
+		config.defaultPlayer = player;
+	} else if (action === "maxConcurrent") {
 		const { limit } = await inquirer.prompt([{
 			type: "number",
 			name: "limit",
@@ -191,7 +211,7 @@ async function processQueue(queue) {
 		const output = activeDownloads.map(([_, data]) => {
 			const progressBar = "█".repeat(Math.floor(parseFloat(data.percent) / 5)) + "░".repeat(20 - Math.floor(parseFloat(data.percent) / 5));
 			// Truncate name if too long
-			const name = data.name.length > 30 ? data.name.substring(0, 27) + "..." : data.name.padEnd(30);
+			const name = data.name.length > 25 ? data.name.substring(0, 22) + "..." : data.name.padEnd(25);
 			
 			// Format ETA
 			const eta = data.eta || 0;
@@ -200,8 +220,10 @@ async function processQueue(queue) {
 			const s = eta % 60;
 			const etaStr = h > 0 ? `${h}s ${m}dk ${s}sn` : m > 0 ? `${m}dk ${s}sn` : `${s}sn`;
 			const speedStr = data.speed ? bytes(data.speed) + '/s' : '0B/s';
+			const downloadedStr = data.downloaded ? bytes(data.downloaded) : '0B';
+			const totalStr = data.total ? bytes(data.total) : '0B';
 
-			return `${name}: [${progressBar}] %${data.percent} - ${speedStr} - kalan: ${etaStr}`;
+			return `${name}: [${progressBar}] %${data.percent} (${downloadedStr} / ${totalStr}) - ${speedStr} - kalan: ${etaStr}`;
 		}).join("\n");
 		
 		if (lastLineCount > 0) {
@@ -243,7 +265,9 @@ async function processQueue(queue) {
 						status: 'indiriliyor', 
 						percent: data.percent,
 						speed: data.speed,
-						eta: data.eta
+						eta: data.eta,
+						downloaded: data.downloaded,
+						total: data.total
 					});
 					printProgress();
 				}
@@ -424,17 +448,29 @@ async function searchAndDownload(animes, downloadQueue) {
 			}
 
 			try {
+				const config = getConfig();
+				const player = config.defaultPlayer || "vlc";
+				
 				console.clear();
-				console.log(chalk.green(`${selectedAnime.NAME} — ${episode.episode_number}. bolum vlc'de aciliyor...`));
+				console.log(chalk.green(`${selectedAnime.NAME} — ${episode.episode_number}. bolum ${player}'de aciliyor...`));
 				
-				await openInVlc(episode.link);
+				setActivity(`${selectedAnime.NAME}`, `${episode.episode_number}. Bölüm İzleniyor`);
+
+				if (player === "mpv") {
+					await openInMpv(episode.link);
+				} else {
+					await openInVlc(episode.link);
+				}
 				
+				setActivity("Menüde geziniyor");
 			} catch (error) {
-				console.error(chalk.red(`vlc baslatilamadi: ${error.message}`));
+				const config = getConfig();
+				console.error(chalk.red(`${config.defaultPlayer || "vlc"} baslatilamadi: ${error.message}`));
 				await new Promise(resolve => setTimeout(resolve, 2000));
 			}
 		}
 	} else if (action === "download") {
+		setActivity(`${selectedAnime.NAME}`, "Bölüm İndiriyor");
 		console.clear();
 		console.log(chalk.green(`\n${selectedAnime.NAME} - indir`));
 
@@ -605,7 +641,18 @@ async function searchAndDownload(animes, downloadQueue) {
 			
 		const output = activeDownloads.map(([ep, data]) => {
 			const progressBar = "█".repeat(Math.floor(parseFloat(data.percent) / 5)) + "░".repeat(20 - Math.floor(parseFloat(data.percent) / 5));
-			return `bolum ${ep}: [${progressBar}] %${data.percent}`;
+			
+			// ETA Format
+			const eta = data.eta || 0;
+			const h = Math.floor(eta / 3600);
+			const m = Math.floor((eta % 3600) / 60);
+			const s = eta % 60;
+			const etaStr = h > 0 ? `${h}s ${m}dk ${s}sn` : m > 0 ? `${m}dk ${s}sn` : `${s}sn`;
+			const speedStr = data.speed ? bytes(data.speed) + '/s' : '0B/s';
+			const downloadedStr = data.downloaded ? bytes(data.downloaded) : '0B';
+			const totalStr = data.total ? bytes(data.total) : '0B';
+
+			return `bolum ${ep}: [${progressBar}] %${data.percent} (${downloadedStr} / ${totalStr}) - ${speedStr} - kalan: ${etaStr}`;
 		}).join("\n");
 		
 		const lines = activeDownloads.length;
@@ -639,7 +686,14 @@ async function searchAndDownload(animes, downloadQueue) {
 				silent: !isSingle,
 				onProgress: (data) => {
 					if (!isSingle) {
-						progressMap.set(episode.episode_number, { percent: data.percent, status: 'indiriliyor' });
+						progressMap.set(episode.episode_number, { 
+							percent: data.percent, 
+							status: 'indiriliyor',
+							speed: data.speed,
+							eta: data.eta,
+							downloaded: data.downloaded,
+							total: data.total
+						});
 						printProgress();
 					}
 				}
@@ -674,6 +728,7 @@ async function searchAndDownload(animes, downloadQueue) {
 
 (async () => {
 	try {
+		await initDiscordRpc();
 		spinner.start();
 
 		/** @type {import("./jsdoc.js").Anime[]} */
@@ -688,9 +743,28 @@ async function searchAndDownload(animes, downloadQueue) {
 		spinner.stop();
 
 		const downloadQueue = loadQueue();
+		const config = getConfig();
+
+		// First run player selection
+		if (!config.defaultPlayer) {
+			console.clear();
+			console.log(chalk.cyan("hosgeldiniz! lutfen varsayilan video oynaticinizi secin."));
+			const { player } = await inquirer.prompt([{
+				type: "list",
+				name: "player",
+				message: "oynatici secimi:",
+				choices: [
+					{ name: "VLC Media Player (Onerilen)", value: "vlc" },
+					{ name: "MPV Player", value: "mpv" }
+				]
+			}]);
+			config.defaultPlayer = player;
+			saveConfig(config);
+		}
 
 		while (true) {
 			console.clear();
+			setActivity("Menüde geziniyor");
 
 			console.log([
 				`${chalk.gray(timeFormat())} animely-cli`,
@@ -702,7 +776,7 @@ async function searchAndDownload(animes, downloadQueue) {
 			}
 
 			if (downloadQueue.length > 0) {
-				console.log(chalk.yellow(`\n⚠️  tamamlanmamis ${downloadQueue.length} indirme var!`));
+				console.log(chalk.yellow(`\n  tamamlanmamis ${downloadQueue.length} indirme var!`));
 			}
 
 			console.log(chalk.gray(line.repeat(100)));
@@ -742,6 +816,10 @@ async function searchAndDownload(animes, downloadQueue) {
 		}
 
 	} catch (error) {
+		if (error.message && error.message.includes("User force closed")) {
+			console.log(chalk.gray("\ngorusmek uzere!"));
+			process.exit(0);
+		}
 		spinner.fail("beklenmeyen bir hata olustu, lutfen daha sonra tekrar deneyiniz.");
 		console.error(chalk.gray(`hata detayi: ${error.message}`));
 	}

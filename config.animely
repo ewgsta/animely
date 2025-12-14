@@ -1,4 +1,5 @@
 {
   "maxConcurrent": 3,
-  "downloadDir": "videos"
+  "downloadDir": "videos",
+  "defaultPlayer": "vlc"
 }

@@ -4,11 +4,12 @@ Animely, terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güç
 
 ## Özellikler
 
-*   **Anında İzleme:** İndirmeyi beklemeden, doğrudan VLC Media Player üzerinden yayın akışı (streaming) yapın.
+*   **Anında İzleme:** İndirmeyi beklemeden, doğrudan **VLC Media Player** veya **MPV Player** üzerinden yayın akışı (streaming) yapın.
+*   **Discord Rich Presence (RPC):** Anime izlerken veya menüde gezerken Discord profilinizde ne yaptığınız otomatik olarak gözükür.
 *   **Akıllı İndirme Yöneticisi:**
-*   **Kaldığı Yerden Devam Etme:** İnternetiniz kesilse veya program kapansa bile indirmeler kaldığı yerden devam eder.
-*   **Kalıcı Kuyruk:** İndirme kuyruğunuz kaydedilir, programı yeniden başlattığınızda işlemleriniz kaybolmaz.
-*   **Detaylı İstatistikler:** İndirme sırasında anlık hız, kalan süre ve ilerleme durumunu görün.
+    *   **Kaldığı Yerden Devam Etme:** İnternetiniz kesilse veya program kapansa bile indirmeler kaldığı yerden devam eder.
+    *   **Kalıcı Kuyruk:** İndirme kuyruğunuz kaydedilir, programı yeniden başlattığınızda işlemleriniz kaybolmaz.
+    *   **Detaylı İstatistikler:** İndirme sırasında anlık hız, indirilen boyut, toplam boyut ve kalan süre (ETA) bilgilerini görün.
 *   **Esnek Seçim:** İster tek bir bölümü, ister bir aralığı (örn: 1-12), isterseniz de tüm sezonu tek seferde indirin.
 *   **Otomatik Güncelleme:** Yeni bir sürüm çıktığında sizi uyarır ve otomatik olarak günceller.
 *   **Gelişmiş Arama:** Anime ismini yazın, en iyi eşleşmeleri anında bulun.
@@ -33,17 +34,21 @@ Kurulum tamamlandıktan sonra, terminale sadece şunu yazmanız yeterli:
 animely
 ```
 
+İlk açılışta varsayılan video oynatıcınızı (VLC veya MPV) seçmeniz istenecektir.
 
 ## Ayarlar
 
 Ana menüden "Ayarlar" seçeneğine giderek:
+*   Varsayılan video oynatıcısını değiştirebilirsiniz.
 *   Eşzamanlı indirme sayısını değiştirebilirsiniz.
 *   İndirme klasörünü özelleştirebilirsiniz.
+
+> **Not:** Ayarlar ve indirme kuyruğu dosyanız, kullanıcı ana dizininizde (`~/.animely/`) güvenli bir şekilde saklanır.
 
 ## Gereksinimler
 
 *   **Node.js:** Çalıştırma ortamı (v14+ önerilir).
-*   **VLC Media Player:** "İzle" özelliği için gereklidir. Bilgisayarınızda yüklü değilse Animely otomatik olarak kurmayı dener veya sizi yönlendirir.
+*   **Video Oynatıcı:** "İzle" özelliği için **VLC Media Player** veya **MPV Player** gereklidir. Animely, sisteminizde yüklü olanı otomatik algılar veya kurulum için yardımcı olur.
 
 ## Lisans
 

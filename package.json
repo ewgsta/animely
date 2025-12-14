@@ -31,6 +31,7 @@
     "axios": "^1.9.0",
     "bytes": "^3.1.2",
     "chalk": "^5.4.1",
+    "discord-rpc": "^4.0.1",
     "figures": "^6.1.0",
     "inquirer": "^12.6.1",
     "mime-types": "^3.0.1",

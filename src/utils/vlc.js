@@ -26,21 +26,20 @@ export async function getVlcPath() {
 		}
 
 		try {
-			// Check if in PATH
+			// kontrol ediom
 			const result = execSync("where vlc").toString().trim().split("\n")[0];
 			if (result && fs.existsSync(result)) return result;
 		} catch (e) {
-			// Not in PATH
+			// bulamadım
 		}
 	} else {
 		try {
 			const result = execSync("which vlc").toString().trim();
 			if (result) return result;
 		} catch (e) {
-			// Not in PATH
+			// bulamadım
 		}
 		
-		// Common linux/mac paths could be added here if needed
 		if (fs.existsSync("/usr/bin/vlc")) return "/usr/bin/vlc";
 		if (fs.existsSync("/Applications/VLC.app/Contents/MacOS/VLC")) return "/Applications/VLC.app/Contents/MacOS/VLC";
 	}
@@ -89,7 +88,6 @@ export async function installVlc() {
 		for (const mgr of managers) {
 			try {
 				execSync(`which ${mgr.cmd}`, { stdio: "ignore" });
-				// Manager found
 				console.log(chalk.yellow(`${mgr.cmd} tespit edildi. kurulum baslatiliyor (sudo gerekebilir)...`));
 				execSync(mgr.install, { stdio: "inherit" });
 				console.log(chalk.green("vlc basariyla kuruldu!"));
@@ -115,7 +113,6 @@ export async function openInVlc(url) {
 	if (isAndroid) {
 		console.log(chalk.cyan("android intent ile video aciliyor..."));
 		try {
-			// Termux am start command
 			execSync(`am start --user 0 -a android.intent.action.VIEW -d "${url}" -t video/*`, { stdio: "ignore" });
 			return;
 		} catch (error) {

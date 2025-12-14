@@ -154,21 +154,22 @@ export async function download(url, outputPath, options = { silent: false }) {
 				}
 
 				if (!options.silent) {
-					const progressBar = "█".repeat(Math.floor(percentValue / 2)) + "░".repeat(50 - Math.floor(percentValue / 2));
+					const barLength = 30;
+					const filledLength = Math.floor((percentValue / 100) * barLength);
+					const progressBar = "█".repeat(filledLength) + "░".repeat(barLength - filledLength);
 					
-					// Format ETA
+					// ETA Format
 					const h = Math.floor(eta / 3600);
 					const m = Math.floor((eta % 3600) / 60);
 					const s = eta % 60;
 					const etaStr = h > 0 ? `${h}s ${m}dk ${s}sn` : m > 0 ? `${m}dk ${s}sn` : `${s}sn`;
 
-					if (process.stdout.isTTY) {
-						process.stdout.clearLine(0);
-						process.stdout.cursorTo(0);
-						process.stdout.write(chalk.gray(`[${progressBar}] ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)}) - ${bytes(speed)}/s - kalan: ${etaStr}`));
-					} else {
-						process.stdout.write(chalk.gray(`\r[${progressBar}] ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)}) - ${bytes(speed)}/s - kalan: ${etaStr}   `));
-					}
+					const output = `[${progressBar}] ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)}) - ${bytes(speed)}/s - kalan: ${etaStr}`;
+					
+					// Use ANSI escape codes for better compatibility
+					// \x1b[2K clears the entire line
+					// \x1b[0G moves cursor to column 0
+					process.stdout.write(`\x1b[2K\x1b[0G${chalk.gray(output)}`);
 				}
 			} else {
 				if (options.onProgress) {
@@ -176,13 +177,8 @@ export async function download(url, outputPath, options = { silent: false }) {
 				}
 
 				if (!options.silent) {
-					if (process.stdout.isTTY) {
-						process.stdout.clearLine(0);
-						process.stdout.cursorTo(0);
-						process.stdout.write(chalk.gray(`yukleniyor: ${bytes(downloaded)} - ${bytes(speed)}/s`));
-					} else {
-						process.stdout.write(chalk.gray(`\ryukleniyor: ${bytes(downloaded)} - ${bytes(speed)}/s`));
-					}
+					const output = `yukleniyor: ${bytes(downloaded)} - ${bytes(speed)}/s`;
+					process.stdout.write(`\x1b[2K\x1b[0G${chalk.gray(output)}`);
 				}
 			}
 		}
