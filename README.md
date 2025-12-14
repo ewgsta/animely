@@ -1,6 +1,6 @@
 # Animely
 
-Animely, terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI (Komut Satırı Arayüzü) aracıdır.
+Animely, terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI aracıdır.
 
 ## Özellikler
 
@@ -27,14 +27,6 @@ Kurulum tamamlandıktan sonra, terminale sadece şunu yazmanız yeterli:
 
 ```bash
 animely
-```
-
-### Android (Termux) Kullanımı
-
-Android cihazınızda Termux uygulamasını kullanıyorsanız, video oynatıcıyı (VLC, MX Player vb.) tetiklemek için `--android` parametresini kullanın:
-
-```bash
-animely --android
 ```
 
 ## Gereksinimler
