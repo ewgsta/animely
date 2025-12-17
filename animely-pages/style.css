@@ -278,7 +278,6 @@ h1 {
     opacity: 1;
 }
 
-/* Terminal Visual */
 .hero-visual {
     flex: 1;
     perspective: 1000px;
@@ -465,27 +464,171 @@ h1 {
     background: rgba(0, 0, 0, 0.05);
 }
 
-/* Footer */
-footer {
-    text-align: center;
-    padding: 2rem 0;
-    border-top: 1px solid var(--glass-border);
-    color: var(--text-secondary);
+/* Waifu <3333 */
+.hero {
+    position: relative;
+    z-index: 1; 
+}
+
+.waifu-container {
+    position: absolute;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.right-waifu {
+    right: -5%; /* Slightly off-screen or aligned to right */
+    bottom: -50px; /* Align to bottom */
+    z-index: -1; /* Behind the terminal/text content */
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+.waifu-image {
+    max-height: 85vh; /* Responsive height based on viewport */
+    max-width: 45vw;  /* Don't take more than half width */
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 30px rgba(0,0,0,0.5));
+    opacity: 0.9;
+}
+
+.install-wrapper {
+    position: relative;
+    max-width: 800px;
     margin: 0 auto;
 }
 
-.social-links a {
-    color: var(--text-secondary);
-    font-size: 1.5rem;
-    transition: color 0.2s;
+.left-waifu-install {
+    left: -300px; 
+    bottom: 1px; 
+    z-index: 1; 
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
 }
 
-.social-links a:hover {
+.installation {
+    position: relative;
+    z-index: 1;
+}
+
+.community {
+    padding: 4rem 0;
+}
+
+.community-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3rem;
+    gap: 2rem;
+}
+
+.community-text h3 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.community-text p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    max-width: 500px;
+}
+
+.tech-stack {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.tech-badge {
+    background: var(--card-hover);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: var(--accent-color);
+    border: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.community-actions {
+    display: flex;
+    gap: 1rem;
+    flex-direction: column;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: var(--accent-color);
+    color: white;
+    box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+}
+
+.btn-secondary {
+    background: var(--card-hover);
     color: var(--text-primary);
+    border: 1px solid var(--glass-border);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Footer Refined */
+footer {
+    margin-top: 4rem;
+    padding: 2rem 0;
+    border-top: 1px solid var(--glass-border);
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.footer-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.copyright {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.credits {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.credits a {
+    color: var(--text-primary);
+    text-decoration: none;
 }
 
 /* Animations */
@@ -515,7 +658,43 @@ footer {
 .delay-3 { animation-delay: 0.3s; transition-delay: 0.3s; }
 
 /* Responsive */
+@media (max-width: 1200px) {
+    .waifu-container {
+        opacity: 0.3; /* Fade out on smaller desktops */
+    }
+}
+
+@media (max-width: 1024px) {
+    .waifu-container {
+        display: none; /* Hide on tablets/laptops */
+    }
+    
+    .hero {
+        gap: 2rem;
+    }
+    
+    h1 {
+        font-size: 3rem;
+    }
+}
+
 @media (max-width: 768px) {
+    .content-wrapper {
+        padding: 0 1.5rem;
+    }
+
+    header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    nav {
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
     .hero {
         flex-direction: column;
         text-align: center;
@@ -529,14 +708,61 @@ footer {
     .cta-group {
         justify-content: center;
         flex-direction: column;
+        width: 100%;
+    }
+    
+    .command-box {
+        width: 100%;
+        justify-content: space-between;
     }
 
     .terminal-window {
         transform: none;
+        min-height: 300px;
     }
     
     .terminal-window:hover {
         transform: none;
+    }
+
+    .community-content {
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .community-text p {
+        margin: 0 auto 1.5rem;
+    }
+
+    .tech-stack {
+        justify-content: center;
+    }
+
+    .community-actions {
+        width: 100%;
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 2.5rem;
+    }
+
+    .community-actions {
+        flex-direction: column;
+    }
+    
+    .nav a {
+        font-size: 0.9rem;
     }
 }
 

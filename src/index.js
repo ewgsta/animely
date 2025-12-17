@@ -171,7 +171,7 @@ async function processQueue(queue) {
 	const { confirm } = await inquirer.prompt([{
 		type: "confirm",
 		name: "confirm",
-		message: "indirmeyi baslatmak istiyor musunuz?",
+		message: "indirmeyi baslatmak istiyor musunuz",
 		default: true
 	}]);
 
@@ -306,7 +306,7 @@ async function searchAndDownload(animes, downloadQueue) {
 		const { name } = await inquirer.prompt([{
 			type: "input",
 			name: "name",
-			message: "hangi animeyi aramak istiyorsunuz? (iptal icin 'iptal' yaziniz):",
+			message: "hangi animeyi aramak istiyorsunuz (iptal icin 'iptal' yaziniz):",
 			validate: (input) => {
 				if (!input || input.trim() === "") {
 					return "lutfen bir anime adi giriniz.";
@@ -595,7 +595,7 @@ async function searchAndDownload(animes, downloadQueue) {
 	const { downloadAction } = await inquirer.prompt([{
 		type: "list",
 		name: "downloadAction",
-		message: "ne yapmak istersiniz?",
+		message: "ne yapmak istersiniz",
 		choices: [
 			{ name: "kuyruga ekle", value: "queue" },
 			{ name: "hemen indir", value: "now" }
@@ -771,10 +771,6 @@ async function searchAndDownload(animes, downloadQueue) {
 				`${chalk.gray(timeFormat())} github ${chalk.blue.underline("https://github.com/ewgsta/animely")}`,
 			].join("\n"));
 
-			if (process.argv.includes("--android")) {
-				console.log(chalk.yellow("android icin baslatılıyor"));
-			}
-
 			if (downloadQueue.length > 0) {
 				console.log(chalk.yellow(`\n  tamamlanmamis ${downloadQueue.length} indirme var!`));
 			}
@@ -789,6 +785,7 @@ async function searchAndDownload(animes, downloadQueue) {
 
 			if (downloadQueue.length > 0) {
 				choices.unshift({ name: `indirme kuyrugunu baslat (${downloadQueue.length} bolum)`, value: "start_queue" });
+				choices.unshift({ name: "indirme kuyrugunu temizle", value: "clear_queue" });
 			}
 
 			choices.push(new inquirer.Separator());
@@ -797,7 +794,7 @@ async function searchAndDownload(animes, downloadQueue) {
 			const { action } = await inquirer.prompt([{
 				type: "list",
 				name: "action",
-				message: "ne yapmak istersiniz?",
+				message: "ne yapmak istersiniz",
 				choices: choices
 			}]);
 
@@ -810,6 +807,20 @@ async function searchAndDownload(animes, downloadQueue) {
 				await searchAndDownload(animes, downloadQueue);
 			} else if (action === "start_queue") {
 				await processQueue(downloadQueue);
+			} else if (action === "clear_queue") {
+				const { confirm } = await inquirer.prompt([{
+					type: "confirm",
+					name: "confirm",
+					message: "indirme kuyrugunu temizlemek istediginize emin misiniz",
+					default: false
+				}]);
+
+				if (confirm) {
+					downloadQueue.length = 0;
+					saveQueue(downloadQueue);
+					console.log(chalk.green("indirme kuyrugu temizlendi!"));
+					await new Promise(resolve => setTimeout(resolve, 1000));
+				}
 			}
 			
 			console.log(""); // boşch

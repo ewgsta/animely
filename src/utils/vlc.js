@@ -6,15 +6,12 @@ import os from "os";
 import chalk from "chalk";
 
 const isWindows = os.platform() === "win32";
-const isAndroid = process.argv.includes("--android") || os.platform() === "android";
 
 /**
  * Checks if VLC is installed/available in PATH or common locations
  * @returns {Promise<string|null>} Path to VLC executable or null
  */
 export async function getVlcPath() {
-	if (isAndroid) return "android-intent";
-
 	if (isWindows) {
 		const commonPaths = [
 			"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe",
@@ -110,16 +107,6 @@ export async function installVlc() {
  * @returns {Promise<number|void>}
  */
 export async function openInVlc(url) {
-	if (isAndroid) {
-		console.log(chalk.cyan("android intent ile video aciliyor..."));
-		try {
-			execSync(`am start --user 0 -a android.intent.action.VIEW -d "${url}" -t video/*`, { stdio: "ignore" });
-			return;
-		} catch (error) {
-			throw new Error("android intent baslatilamadi. termux:api yuklu mu?");
-		}
-	}
-
 	let vlcPath = await getVlcPath();
 
 	if (!vlcPath) {

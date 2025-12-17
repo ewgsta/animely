@@ -13,7 +13,6 @@ Animely, terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güç
 *   **Esnek Seçim:** İster tek bir bölümü, ister bir aralığı (örn: 1-12), isterseniz de tüm sezonu tek seferde indirin.
 *   **Otomatik Güncelleme:** Yeni bir sürüm çıktığında sizi uyarır ve otomatik olarak günceller.
 *   **Gelişmiş Arama:** Anime ismini yazın, en iyi eşleşmeleri anında bulun.
-*   **Android Desteği:** Termux üzerinden çalıştırarak telefonunuzda da kullanabilirsiniz.
 *   **Kullanıcı Dostu Arayüz:** Renkli, anlaşılır, Türkçe ve etkileşimli menüler.
 
 ## Kurulum
