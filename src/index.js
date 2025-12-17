@@ -11,6 +11,8 @@ import { runWithConcurrency } from "./utils/concurrency.js";
 import { openInVlc } from "./utils/vlc.js";
 import { openInMpv } from "./utils/mpv.js";
 import { initDiscordRpc, setActivity } from "./utils/discord.js";
+import { loadHistory, updateHistory } from "./utils/history.js";
+import { verifyToken, searchAnime, updateAnilistProgress, authenticate } from "./utils/anilist.js";
 import { execSync, spawnSync } from "child_process";
 import axios from "axios";
 import bytes from "bytes";
@@ -106,6 +108,7 @@ async function showSettings() {
 			{ name: `varsayilan oynatici (su an: ${chalk.yellow(config.defaultPlayer || "secilmedi")})`, value: "defaultPlayer" },
 			{ name: `eszamanli indirme sayisi (su an: ${chalk.yellow(config.maxConcurrent)})`, value: "maxConcurrent" },
 			{ name: `indirme klasoru (su an: ${chalk.yellow(config.downloadDir)})`, value: "downloadDir" },
+			{ name: `anilist hesabi (su an: ${chalk.yellow(config.anilistUsername || "bagli degil")})`, value: "anilist" },
 			new inquirer.Separator(),
 			{ name: "geri don", value: "back" }
 		]
@@ -113,7 +116,79 @@ async function showSettings() {
 
 	if (action === "back") return;
 
-	if (action === "defaultPlayer") {
+	if (action === "anilist") {
+		const choices = [
+			{ name: "otomatik giris yap (tarayici acilir)", value: "auto" },
+			{ name: "manuel token gir", value: "manual" }
+		];
+
+		if (config.anilistToken) {
+			choices.push({ name: "baglantiyi kaldir", value: "logout" });
+		}
+
+		choices.push({ name: "iptal", value: "cancel" });
+
+		const { method } = await inquirer.prompt([{
+			type: "list",
+			name: "method",
+			message: "giris yontemini secin:",
+			choices
+		}]);
+
+		if (method === "cancel") {
+			await showSettings();
+			return;
+		}
+
+		if (method === "logout") {
+			config.anilistToken = undefined;
+			config.anilistUsername = undefined;
+			saveConfig(config);
+			console.log(chalk.yellow("\nanilist baglantisi kaldirildi."));
+			await new Promise(resolve => setTimeout(resolve, 1500));
+			await showSettings();
+			return;
+		} else if (method === "auto") {
+			try {
+				const token = await authenticate();
+				spinner.start("token dogrulaniyor...");
+				const username = await verifyToken(token);
+				spinner.stop();
+
+				if (username) {
+					config.anilistToken = token;
+					config.anilistUsername = username;
+					console.log(chalk.green(`\nbasariyla giris yapildi! hosgeldin ${username}`));
+				} else {
+					console.log(chalk.red("\ntoken alindi fakat dogrulanamadi."));
+				}
+			} catch (error) {
+				console.log(chalk.red("\ngiris yapilamadi: " + error.message));
+			}
+		} else if (method === "manual") {
+			console.log(chalk.cyan("\nanilist token almak icin: https://anilist.co/api/v2/oauth/authorize?client_id=33256&response_type=token"));
+			const { token } = await inquirer.prompt([{
+				type: "input",
+				name: "token",
+				message: "anilist access token'inizi girin:"
+			}]);
+
+			if (token.trim()) {
+				spinner.start("token dogrulaniyor...");
+				const username = await verifyToken(token.trim());
+				spinner.stop();
+
+				if (username) {
+					config.anilistToken = token.trim();
+					config.anilistUsername = username;
+					console.log(chalk.green(`\nbasariyla giris yapildi! hosgeldin ${username}`));
+				} else {
+					console.log(chalk.red("\ngecersiz token!"));
+				}
+			}
+		}
+		await new Promise(resolve => setTimeout(resolve, 2000));
+	} else if (action === "defaultPlayer") {
 		const { player } = await inquirer.prompt([{
 			type: "list",
 			name: "player",
@@ -149,6 +224,83 @@ async function showSettings() {
 	console.log(chalk.green("\nayarlar basariyla kaydedildi!"));
 	await new Promise(resolve => setTimeout(resolve, 1000));
 	await showSettings();
+}
+
+async function showHistory() {
+	const history = loadHistory();
+	const items = Object.values(history);
+	
+	const completed = items.filter(i => i.completed);
+	const inProgress = items.filter(i => !i.completed);
+
+	console.clear();
+	console.log(chalk.bold("\nizlediklerim"));
+	console.log(chalk.gray(line.repeat(50)));
+
+	const { type } = await inquirer.prompt([{
+		type: "list",
+		name: "type",
+		message: "hangi listeyi goruntulemek istersiniz?",
+		choices: [
+			{ name: `devam edenler (${inProgress.length})`, value: "progress" },
+			{ name: `tamamlananlar (${completed.length})`, value: "completed" },
+			new inquirer.Separator(),
+			{ name: "geri don", value: "back" }
+		]
+	}]);
+
+	if (type === "back") return;
+
+	if (type === "completed") {
+		console.clear();
+		console.log(chalk.green("\ntamamlanan animeler"));
+		console.log(chalk.gray(line.repeat(50)));
+		
+		if (completed.length === 0) {
+			console.log(chalk.yellow("henuz tamamlanmis bir anime yok."));
+		} else {
+			completed.forEach(anime => {
+				console.log(`${chalk.cyan(anime.name)} - ${chalk.gray(new Date(anime.lastWatchedAt).toLocaleDateString())}`);
+			});
+		}
+		
+		await inquirer.prompt([{ type: "input", name: "dummy", message: "geri donmek icin enter'a basin..." }]);
+		await showHistory();
+	} else if (type === "progress") {
+		if (inProgress.length === 0) {
+			console.log(chalk.yellow("\nhenuz izlenen bir anime yok."));
+			await new Promise(resolve => setTimeout(resolve, 1500));
+			await showHistory();
+			return;
+		}
+
+		const { anime } = await inquirer.prompt([{
+			type: "list",
+			name: "anime",
+			message: "detaylarini gormek istediginiz animeyi secin:",
+			choices: [
+				...inProgress.map(i => ({
+					name: `${i.name} ${chalk.gray(`(son izlenen: ${i.lastEpisode}. bolum)`)}`,
+					value: i
+				})),
+				new inquirer.Separator(),
+				{ name: "geri don", value: "back" }
+			]
+		}]);
+
+		if (anime === "back") {
+			await showHistory();
+			return;
+		}
+
+		console.log(chalk.cyan(`\n${anime.name}`));
+		console.log(chalk.gray(`son izlenen bolum: ${anime.lastEpisode}`));
+		console.log(chalk.gray(`toplam bolum: ${anime.totalEpisodes}`));
+		console.log(chalk.gray(`son izleme tarihi: ${new Date(anime.lastWatchedAt).toLocaleString()}`));
+		
+		await inquirer.prompt([{ type: "input", name: "dummy", message: "geri donmek icin enter'a basin..." }]);
+		await showHistory();
+	}
 }
 
 /**
@@ -462,7 +614,48 @@ async function searchAndDownload(animes, downloadQueue) {
 					await openInVlc(episode.link);
 				}
 				
-				setActivity("Menüde geziniyor");
+				setActivity("Ana menüde takılıyor");
+
+				const { watched } = await inquirer.prompt([{
+					type: "confirm",
+					name: "watched",
+					message: "bolumu izlendi olarak isaretlemek ister misiniz?",
+					default: true
+				}]);
+
+				if (watched) {
+					const totalEpisodes = episodes.length;
+					const epNum = typeof episode.episode_number === "number" ? episode.episode_number : parseInt(episode.episode_number);
+					
+					// Update local history
+					let anilistId;
+					const history = loadHistory();
+					if (history[selectedAnime.NAME]) {
+						anilistId = history[selectedAnime.NAME].anilistId;
+					}
+
+					// If we have token but no ID, search for it
+					if (config.anilistToken && !anilistId) {
+						spinner.start("anilist'te anime araniyor...");
+						anilistId = await searchAnime(selectedAnime.NAME);
+						spinner.stop();
+					}
+
+					updateHistory(selectedAnime.NAME, epNum, totalEpisodes, anilistId);
+					console.log(chalk.green("gecmis guncellendi!"));
+
+					// Update AniList if possible
+					if (config.anilistToken && anilistId) {
+						spinner.start("anilist guncelleniyor...");
+						const success = await updateAnilistProgress(anilistId, epNum, epNum >= totalEpisodes);
+						spinner.stop();
+						if (success) {
+							console.log(chalk.green("anilist basariyla guncellendi!"));
+						}
+					}
+					
+					await new Promise(resolve => setTimeout(resolve, 1500));
+				}
 			} catch (error) {
 				const config = getConfig();
 				console.error(chalk.red(`${config.defaultPlayer || "vlc"} baslatilamadi: ${error.message}`));
@@ -780,6 +973,7 @@ async function searchAndDownload(animes, downloadQueue) {
 			/** @type {any[]} */
 			const choices = [
 				{ name: "anime ara", value: "search" },
+				{ name: "izlediklerim", value: "history" },
 				{ name: "ayarlar", value: "settings" }
 			];
 
@@ -803,6 +997,8 @@ async function searchAndDownload(animes, downloadQueue) {
 				process.exit(0);
 			} else if (action === "settings") {
 				await showSettings();
+			} else if (action === "history") {
+				await showHistory();
 			} else if (action === "search") {
 				await searchAndDownload(animes, downloadQueue);
 			} else if (action === "start_queue") {

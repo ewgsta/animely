@@ -23,6 +23,8 @@ const defaultConfig = {
  * @property {number} maxConcurrent
  * @property {string} downloadDir
  * @property {string} defaultPlayer
+ * @property {string} [anilistToken]
+ * @property {string} [anilistUsername]
  */
 
 /**

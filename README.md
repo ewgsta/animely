@@ -3,6 +3,7 @@ Animely, terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güç
 ## Özellikler
 
 *   **Anında İzleme:** İndirmeyi beklemeden, doğrudan **VLC Media Player** veya **MPV Player** üzerinden yayın akışı (streaming) yapın.
+*   **Anilist Entegrasyonu:** İzlediğiniz animeleri anilist hesabınıza otomatik olarak ekleyin!
 *   **Discord Rich Presence (RPC):** Anime izlerken veya menüde gezerken Discord profilinizde ne yaptığınız otomatik olarak gözükür.
 *   **Akıllı İndirme Yöneticisi:**
     *   **Kaldığı Yerden Devam Etme:** İnternetiniz kesilse veya program kapansa bile indirmeler kaldığı yerden devam eder.
