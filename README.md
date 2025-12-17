@@ -1,5 +1,3 @@
-# Animely
-
 Animely, terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI aracıdır.
 
 ## Özellikler
