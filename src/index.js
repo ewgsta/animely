@@ -6,6 +6,7 @@ import { loadQueue, saveQueue } from "./utils/queue.js";
 import { initDiscordRpc, setActivity } from "./utils/discord.js";
 import { timeFormat } from "./functions/time.js";
 import { API_URL } from "./constants.js";
+import { getAnimeList } from "./utils/data_manager.js";
 
 import { showSettings } from "./utils/settings_ui.js";
 import { showHistory } from "./utils/show_history.js";
@@ -13,7 +14,6 @@ import { processQueue } from "./utils/process_queue.js";
 import { searchAndDownload } from "./utils/search_download.js";
 
 import { execSync, spawnSync } from "child_process";
-import axios from "axios";
 import chalk from "chalk";
 import fs from "fs";
 import inquirer from "inquirer";
@@ -60,11 +60,11 @@ import { runSpeedTest } from "./utils/speedtest.js";
 
 		let animes;
 		try {
-			const [response] = await Promise.all([
-				axios.get(`${API_URL}/animes`),
+			const [animesResult] = await Promise.all([
+				getAnimeList(),
 				speedTestPromise
 			]);
-			animes = response.data;
+			animes = animesResult;
 		} catch (error) {
 			spinner.fail(chalk.red("anime listesi alinamadi. internet baglantini kontrol et"));
 			return;
@@ -134,6 +134,18 @@ import { runSpeedTest } from "./utils/speedtest.js";
 			} else if (action === "history") {
 				await showHistory();
 			} else if (action === "search") {
+				try {
+					// Spinner sadece güncelleme gerekiyorsa görünebilir ama
+					// getAnimeList cache kontrolünü senkron gibi yapsa da API çağrısı asenkron.
+					// Kullanıcıya bir şey olduğunu belirtmek iyi olur.
+					spinner.start("Liste kontrol ediliyor...");
+					animes = await getAnimeList();
+					spinner.stop();
+				} catch (error) {
+					spinner.stop();
+					// Hata durumunda eski liste ile devam etmeyi deneyebiliriz veya hata basabiliriz.
+					// Eğer 'animes' zaten doluysa (ilk açılışta geldi), devam edebiliriz.
+				}
 				await searchAndDownload(animes, downloadQueue);
 			} else if (action === "start_queue") {
 				await processQueue(downloadQueue);
