@@ -47,7 +47,7 @@ export async function download(url, outputPath, options = { silent: false }) {
 			}
 		}
 	} catch (error) {
-		// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
 	}
 
 	let response;
@@ -141,7 +141,7 @@ export async function download(url, outputPath, options = { silent: false }) {
 			const speed = (downloaded - lastDownloaded) / (timeDiff / 1000);
 			const remaining = totalLength - downloaded;
 			const eta = speed > 0 ? Math.ceil(remaining / speed) : 0;
-			
+
 			lastTime = now;
 			lastDownloaded = downloaded;
 
@@ -157,18 +157,14 @@ export async function download(url, outputPath, options = { silent: false }) {
 					const barLength = 30;
 					const filledLength = Math.floor((percentValue / 100) * barLength);
 					const progressBar = "█".repeat(filledLength) + "░".repeat(barLength - filledLength);
-					
-					// ETA Format
+
 					const h = Math.floor(eta / 3600);
 					const m = Math.floor((eta % 3600) / 60);
 					const s = eta % 60;
 					const etaStr = h > 0 ? `${h}s ${m}dk ${s}sn` : m > 0 ? `${m}dk ${s}sn` : `${s}sn`;
 
 					const output = `[${progressBar}] ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)}) - ${bytes(speed)}/s - kalan: ${etaStr}`;
-					
-					// Use ANSI escape codes for better compatibility
-					// \x1b[2K clears the entire line
-					// \x1b[0G moves cursor to column 0
+
 					process.stdout.write(`\x1b[2K\x1b[0G${chalk.gray(output)}`);
 				}
 			} else {

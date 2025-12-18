@@ -4,6 +4,7 @@ import chalk from "chalk";
 import http from "http";
 import { exec } from "child_process";
 import { getConfig } from "./config.js";
+import { ANILIST_ID, AUTH_URL } from "../constants.js";
 
 const ANILIST_API = "https://graphql.anilist.co";
 
@@ -117,7 +118,7 @@ export function authenticate() {
 	return new Promise((resolve, reject) => {
 		const server = http.createServer((req, res) => {
 			const url = new URL(req.url || "/", "http://localhost:6677");
-			
+
 			if (url.pathname === "/callback") {
 				res.writeHead(200, { "Content-Type": "text/html" });
 				res.end(`
@@ -170,11 +171,11 @@ export function authenticate() {
 			res.end();
 		});
 
-		server.listen(3000, () => {
-			const authUrl = "https://anilist.co/api/v2/oauth/authorize?client_id=33354&response_type=token&redirect_uri=http://localhost:6677/callback";
+		server.listen(6677, () => {
+			const authUrl = AUTH_URL;
 			console.log(chalk.cyan("\nTarayici aciliyor... Lutfen AniList hesabinizla giris yapin."));
 			console.log(chalk.gray(`Eger acilmazsa bu linke tiklayin: ${authUrl}`));
-			
+
 			const start = (process.platform == 'darwin' ? 'open' : process.platform == 'win32' ? 'start' : 'xdg-open');
 			if (process.platform === 'win32') {
 				exec(`start "" "${authUrl}"`);
