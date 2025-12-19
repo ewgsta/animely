@@ -12,6 +12,8 @@ import { showSettings } from "./utils/settings_ui.js";
 import { showHistory } from "./utils/show_history.js";
 import { processQueue } from "./utils/process_queue.js";
 import { searchAndDownload } from "./utils/search_download.js";
+import { resumeWatch } from "./utils/resume_watch.js";
+import { loadHistory } from "./utils/history.js";
 
 import { execSync, spawnSync } from "child_process";
 import chalk from "chalk";
@@ -76,18 +78,62 @@ import { runSpeedTest } from "./utils/speedtest.js";
 
 		if (!config.defaultPlayer) {
 			console.clear();
-			console.log(chalk.cyan("hosgeldiniz! lutfen varsayilan video oynaticinizi secin."));
+			console.log(chalk.bold.green("hosgeldin, kurulumu halledelim\n"));
+
+			console.log(chalk.cyan("video oynaticin var mi:"));
+			const { playerConfirm } = await inquirer.prompt([{
+				type: "list",
+				name: "playerConfirm",
+				message: "vlc ya da mpv var mi sende?",
+				choices: [
+					{ name: "evet, var", value: "yes" },
+					{ name: "hayir, indir (otomatik - winget)", value: "install" },
+					{ name: "hayir, tarayiciyi ac", value: "web" }
+				]
+			}]);
+
+			if (playerConfirm === "install") {
+				const { playerToInstall } = await inquirer.prompt([{
+					type: "list",
+					name: "playerToInstall",
+					message: "hangisini kuralim?",
+					choices: [
+						{ name: "vlc media player", value: "VideoLAN.VLC" },
+						{ name: "mpv player", value: "io.mpv.mpv" }
+					]
+				}]);
+
+				console.log(chalk.yellow(`\n${playerToInstall} kuruluyor...`));
+				try {
+					spawnSync("winget", ["install", "-e", "--id", playerToInstall], { stdio: "inherit" });
+					console.log(chalk.green("\nkurulum bitti"));
+				} catch (e) {
+					console.log(chalk.red("otomatik kurulum patladi, sen elle indiriver"));
+				}
+			} else if (playerConfirm === "web") {
+				const start = (process.platform == 'darwin' ? 'open' : process.platform == 'win32' ? 'start' : 'xdg-open');
+				if (process.platform === 'win32') {
+					spawnSync("cmd", ["/c", "start", "https://www.videolan.org/vlc/"], { stdio: 'ignore' });
+				}
+				console.log(chalk.yellow("tarayiciyi actim, kurup gel"));
+				await new Promise(resolve => setTimeout(resolve, 5000));
+			}
+
+			console.log("");
+
 			const { player } = await inquirer.prompt([{
 				type: "list",
 				name: "player",
-				message: "oynatici secimi:",
+				message: "hangisini kullansin animely:",
 				choices: [
-					{ name: "VLC Media Player (Onerilen)", value: "vlc" },
-					{ name: "MPV Player", value: "mpv" }
+					{ name: "vlc (onerilen)", value: "vlc" },
+					{ name: "mpv", value: "mpv" }
 				]
 			}]);
 			config.defaultPlayer = player;
 			saveConfig(config);
+			console.log(chalk.green("\ntamamdir, basliyoruz"));
+			await new Promise(resolve => setTimeout(resolve, 2000));
 		}
 
 		while (true) {
@@ -103,6 +149,21 @@ import { runSpeedTest } from "./utils/speedtest.js";
 				console.log(chalk.yellow(`\n  tamamlanmamis ${downloadQueue.length} indirme var!`));
 			}
 
+			const history = loadHistory();
+			const lastWatched = Object.values(history)
+				.sort((a, b) => new Date(b.lastWatchedAt).getTime() - new Date(a.lastWatchedAt).getTime())[0];
+
+			let resumeAnime = null;
+			let nextEpisode = null;
+
+			if (lastWatched && !lastWatched.completed && animes) {
+				const found = animes.find(a => a.NAME === lastWatched.name);
+				if (found) {
+					resumeAnime = found;
+					nextEpisode = lastWatched.lastEpisode + 1;
+				}
+			}
+
 			console.log(chalk.gray(line.repeat(100)));
 
 			const choices = [
@@ -110,6 +171,13 @@ import { runSpeedTest } from "./utils/speedtest.js";
 				{ name: "izlediklerim", value: "history" },
 				{ name: "ayarlar", value: "settings" }
 			];
+
+			if (resumeAnime) {
+				choices.unshift({
+					name: `devam et: ${chalk.cyan(resumeAnime.NAME)} ${chalk.gray(`(${nextEpisode}. bolum)`)}`,
+					value: "resume"
+				});
+			}
 
 			if (downloadQueue.length > 0) {
 				choices.unshift({ name: `indirme kuyrugunu baslat (${downloadQueue.length} bolum)`, value: "start_queue" });
@@ -129,22 +197,20 @@ import { runSpeedTest } from "./utils/speedtest.js";
 			if (action === "exit") {
 				console.log(chalk.gray("gorusmek uzere!"));
 				process.exit(0);
+			} else if (action === "resume") {
+				await resumeWatch(resumeAnime, nextEpisode);
 			} else if (action === "settings") {
 				await showSettings();
 			} else if (action === "history") {
 				await showHistory();
 			} else if (action === "search") {
 				try {
-					// Spinner sadece güncelleme gerekiyorsa görünebilir ama
-					// getAnimeList cache kontrolünü senkron gibi yapsa da API çağrısı asenkron.
-					// Kullanıcıya bir şey olduğunu belirtmek iyi olur.
+
 					spinner.start("Liste kontrol ediliyor...");
 					animes = await getAnimeList();
 					spinner.stop();
 				} catch (error) {
 					spinner.stop();
-					// Hata durumunda eski liste ile devam etmeyi deneyebiliriz veya hata basabiliriz.
-					// Eğer 'animes' zaten doluysa (ilk açılışta geldi), devam edebiliriz.
 				}
 				await searchAndDownload(animes, downloadQueue);
 			} else if (action === "start_queue") {

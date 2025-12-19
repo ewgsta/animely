@@ -13,8 +13,8 @@ import { setActivity } from "./discord.js";
 import { updateHistory, loadHistory } from "./history.js";
 import { searchAnime, updateAnilistProgress } from "./anilist.js";
 import { spinner } from "./spinner.js";
-import { download } from "./download.js";
-import { runWithConcurrency } from "./concurrency.js";
+import { dl } from "./download.js";
+import { batch } from "./concurrency.js";
 import { ProgressBar } from "./progress.js";
 import { API_URL } from "../constants.js";
 
@@ -411,7 +411,7 @@ export async function searchAndDownload(animes, downloadQueue) {
                         progressUI.update(episode.episode_number, { percent: 0, status: 'indiriliyor' });
                     }
 
-                    await download(episode.link, downloadPath, {
+                    await dl(episode.link, downloadPath, {
                         silent: !isSingle,
                         onProgress: (data) => {
                             if (!isSingle) {
@@ -425,28 +425,31 @@ export async function searchAndDownload(animes, downloadQueue) {
                                 });
                             }
                         }
+                    }, {
+                        count: config.retryCount || 3,
+                        delay: config.retryDelay || 3000
                     });
 
                     if (!isSingle) {
                         progressUI.update(episode.episode_number, { percent: 100, status: 'tamamlandi' });
                     } else {
-                        spinner.succeed(chalk.bold(`${selectedAnime.NAME} — ${episode.episode_number}. bolum basariyla indirildi.`));
+                        spinner.succeed(chalk.bold(`${selectedAnime.NAME} — ${episode.episode_number}. bolum indi.`));
                     }
                 } catch (error) {
                     if (!isSingle) {
                         progressUI.update(episode.episode_number, { percent: 0, status: 'hata' });
                     } else {
-                        spinner.fail(chalk.red("indirme sirasinda bir hata olustu."));
-                        console.error(chalk.gray(`hata detayi: ${error.message}`));
+                        spinner.fail(chalk.red("hata olustu."));
+                        console.error(chalk.gray(`detay: ${error.message}`));
                     }
                 }
             });
 
-            await runWithConcurrency(tasks, config.maxConcurrent);
+            await batch(tasks, config.maxConcurrent);
             progressUI.clear();
 
             if (selectedEpisodes.length > 1) {
-                spinner.succeed(chalk.bold("tum indirmeler tamamlandi!"));
+                spinner.succeed(chalk.bold("indirmeler bitti"));
             }
             return;
         }

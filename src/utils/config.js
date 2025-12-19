@@ -7,7 +7,6 @@ const homeDir = os.homedir();
 const configDir = path.join(homeDir, ".animely");
 const configPath = path.join(configDir, "config.json");
 
-// Ensure config directory exists
 if (!fs.existsSync(configDir)) {
 	fs.mkdirSync(configDir, { recursive: true });
 }
@@ -16,6 +15,8 @@ const defaultConfig = {
 	maxConcurrent: 3,
 	downloadDir: path.join(process.cwd(), "animely-downloads"),
 	defaultPlayer: "", // "vlc" | "mpv"
+	retryCount: 3,
+	retryDelay: 3000
 };
 
 /**
@@ -23,6 +24,8 @@ const defaultConfig = {
  * @property {number} maxConcurrent
  * @property {string} downloadDir
  * @property {string} defaultPlayer
+ * @property {number} retryCount
+ * @property {number} retryDelay
  * @property {string} [anilistToken]
  * @property {string} [anilistUsername]
  */

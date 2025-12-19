@@ -17,26 +17,26 @@ export async function showSettings() {
     const { action } = await inquirer.prompt([{
         type: "list",
         name: "action",
-        message: "degistirmek istediginiz ayari secin:",
+        message: "ne degisecek:",
         choices: [
-            { name: `varsayilan oynatici (su an: ${chalk.yellow(config.defaultPlayer || "secilmedi")})`, value: "defaultPlayer" },
-            { name: `eszamanli indirme sayisi (su an: ${chalk.yellow(config.maxConcurrent)})`, value: "maxConcurrent" },
+            { name: `oynatici (su an: ${chalk.yellow(config.defaultPlayer || "yok")})`, value: "defaultPlayer" },
+            { name: `ayni anda indirme (su an: ${chalk.yellow(config.maxConcurrent)})`, value: "maxConcurrent" },
             { name: `indirme klasoru (su an: ${chalk.yellow(config.downloadDir)})`, value: "downloadDir" },
-            { name: `anilist hesabi (su an: ${chalk.yellow(config.anilistUsername || "bagli degil")})`, value: "anilist" },
+            { name: `indirme tekrari (su an: ${chalk.yellow(config.retryCount)}x / ${chalk.yellow(config.retryDelay / 1000)}sn)`, value: "retrySettings" },
+            { name: `anilist baglantisi (su an: ${chalk.yellow(config.anilistUsername || "bagli degil")})`, value: "anilist" },
             new inquirer.Separator(),
-            { name: "geri don", value: "back" }
+            { name: "geri", value: "back" }
         ]
     }]);
 
     if (action === "back") return;
-
     if (action === "anilist") {
         const choices = [];
 
         if (config.anilistToken) {
-            choices.push({ name: "baglantiyi kaldir", value: "logout" });
+            choices.push({ name: "baglantiyi kopar", value: "logout" });
         } else {
-            choices.push({ name: "anilist'e baglan", value: "auto" });
+            choices.push({ name: "baglan", value: "auto" });
         }
 
         choices.push({ name: "iptal", value: "cancel" });
@@ -44,7 +44,7 @@ export async function showSettings() {
         const { method } = await inquirer.prompt([{
             type: "list",
             name: "method",
-            message: "seciminiz:",
+            message: "ne yapalim:",
             choices
         }]);
 
@@ -57,26 +57,26 @@ export async function showSettings() {
             config.anilistToken = undefined;
             config.anilistUsername = undefined;
             saveConfig(config);
-            console.log(chalk.yellow("\nanilist baglantisi kaldirildi."));
+            console.log(chalk.yellow("\nanilist koptu"));
             await new Promise(resolve => setTimeout(resolve, 1500));
             await showSettings();
             return;
         } else if (method === "auto") {
             try {
                 const token = await authenticate();
-                spinner.start("token dogrulaniyor...");
+                spinner.start("dogruluyorum...");
                 const username = await verifyToken(token);
                 spinner.stop();
 
                 if (username) {
                     config.anilistToken = token;
                     config.anilistUsername = username;
-                    console.log(chalk.green(`\nbasariyla giris yapildi! hosgeldin ${username}`));
+                    console.log(chalk.green(`\ngiris yapildi, hosgeldin ${username}`));
                 } else {
-                    console.log(chalk.red("\ntoken alindi fakat dogrulanamadi."));
+                    console.log(chalk.red("\ntoken geldi ama dogrulayamadim"));
                 }
             } catch (error) {
-                console.log(chalk.red("\ngiris yapilamadi: " + error.message));
+                console.log(chalk.red("\ngiris yapamadim: " + error.message));
             }
         }
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -84,10 +84,10 @@ export async function showSettings() {
         const { player } = await inquirer.prompt([{
             type: "list",
             name: "player",
-            message: "varsayilan oynaticiyi secin:",
+            message: "sec bakalim:",
             choices: [
-                { name: "VLC Media Player", value: "vlc" },
-                { name: "MPV Player", value: "mpv" }
+                { name: "vlc media player", value: "vlc" },
+                { name: "mpv player", value: "mpv" }
             ],
             default: config.defaultPlayer || "vlc"
         }]);
@@ -96,24 +96,44 @@ export async function showSettings() {
         const { limit } = await inquirer.prompt([{
             type: "number",
             name: "limit",
-            message: "yeni eszamanli indirme sayisi (1-10 arasi):",
+            message: "ayni anda kac indirme olsun (1-10):",
             default: config.maxConcurrent,
-            validate: (input) => (input > 0 && input <= 10) ? true : "lutfen 1 ile 10 arasinda bir sayi girin."
+            validate: (input) => (input > 0 && input <= 10) ? true : "1 ile 10 arasi girj"
         }]);
         config.maxConcurrent = limit;
     } else if (action === "downloadDir") {
         const { dir } = await inquirer.prompt([{
             type: "input",
             name: "dir",
-            message: "yeni indirme klasoru:",
+            message: "yeni klasor yolu:",
             default: config.downloadDir,
-            validate: (input) => input.trim() !== "" ? true : "gecerli bir klasor yolu girin."
+            validate: (input) => input.trim() !== "" ? true : "bos gecme"
         }]);
         config.downloadDir = dir;
+    } else if (action === "retrySettings") {
+        const { count, delay } = await inquirer.prompt([
+            {
+                type: "number",
+                name: "count",
+                message: "hata olursa kac kere denesin (0-10):",
+                default: config.retryCount,
+                validate: (input) => (input >= 0 && input <= 10) ? true : "0-10 arasi gir"
+            },
+            {
+                type: "number",
+                name: "delay",
+                message: "kac sn beklesin:",
+                default: config.retryDelay / 1000,
+                validate: (input) => (input >= 0) ? true : "pozitif gir"
+            }
+        ]);
+
+        config.retryCount = count;
+        config.retryDelay = delay * 1000;
     }
 
     saveConfig(config);
-    console.log(chalk.green("\nayarlar basariyla kaydedildi!"));
+    console.log(chalk.green("\nayarlar tamam"));
     await new Promise(resolve => setTimeout(resolve, 1000));
     await showSettings();
 }

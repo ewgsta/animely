@@ -6,7 +6,7 @@
  * @param {number} limit
  * @returns {Promise<T[]>}
  */
-export async function runWithConcurrency(tasks, limit) {
+export async function batch(tasks, limit) {
 	const results = [];
 	const executing = [];
 

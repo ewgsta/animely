@@ -5,6 +5,11 @@ import chalk from "chalk";
 import fs from "fs";
 import mime from "mime-types";
 import { pipeline } from "stream/promises";
+import ffmpeg from "fluent-ffmpeg";
+import ffmpegPath from "ffmpeg-static";
+
+// @ts-ignore
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 /**
  *
@@ -15,6 +20,10 @@ import { pipeline } from "stream/promises";
 export async function download(url, outputPath, options = { silent: false }) {
 	if (!url || typeof url !== "string") {
 		throw new Error("gecersiz url");
+	}
+
+	if (url.includes(".m3u8")) {
+		return downloadM3U8(url, outputPath, options);
 	}
 
 	let startByte = 0;
@@ -193,5 +202,88 @@ export async function download(url, outputPath, options = { silent: false }) {
 			fs.unlinkSync(fullPath);
 		}
 		throw new Error(`dosya yazma hatasi: ${error.message}`);
+	}
+}
+
+/**
+ * M3U8 
+ * @param {string} url 
+ * @param {string} outputPath 
+ * @param {{ silent?: boolean, onProgress?: (data: { percent: string, downloaded: number, total: number, speed: number, eta: number }) => void }} [options]
+ */
+async function downloadM3U8(url, outputPath, options = { silent: false }) {
+	const fullPath = `${outputPath}.mp4`;
+
+	if (fs.existsSync(fullPath)) {
+		if (!options.silent) console.log(chalk.green(`dosya zaten inmis (m3u8): ${fullPath}`));
+		if (options.onProgress) options.onProgress({ percent: "100", downloaded: 0, total: 0, speed: 0, eta: 0 });
+		return;
+	}
+
+	if (!options.silent) console.log(chalk.cyan("\nm3u8 indiriliyor ve birlestiriliyor (bu islem biraz surebilir)..."));
+
+	return new Promise((resolve, reject) => {
+		ffmpeg(url)
+			.on('start', () => {
+				// bildirim yok
+			})
+			.on('error', (err) => {
+				reject(new Error(`ffmpeg hatasi: ${err.message}`));
+			})
+			.on('progress', (progress) => {
+				const percent = progress.percent ? progress.percent.toFixed(1) : "0";
+				const downloadedBytes = (progress.targetSize || 0) * 1024;
+
+				if (options.onProgress) {
+					options.onProgress({
+						percent,
+						downloaded: downloadedBytes,
+						total: 0,
+						speed: 0,
+						eta: 0
+					});
+				}
+
+				if (!options.silent) {
+					const output = `indiriliyor: ${percent}% (${bytes(downloadedBytes)})`;
+					process.stdout.clearLine(0);
+					process.stdout.cursorTo(0);
+					process.stdout.write(`\x1b[2K\x1b[0G${chalk.gray(output)}`);
+				}
+			})
+			.on('end', () => {
+				if (!options.silent) {
+					process.stdout.write("\n");
+					console.log(chalk.green(`dosya basariyla kaydedildi: ${fullPath}`));
+				}
+				resolve();
+			})
+			.outputOptions('-c copy')
+			.outputOptions('-bsf:a aac_adtstoasc')
+			.save(fullPath);
+	});
+}
+
+/**
+ * @param {string} url 
+ * @param {string} outputPath 
+ * @param {{ silent?: boolean, onProgress?: (data: any) => void }} [options]
+ * @param {{ count: number, delay: number }} [retryOptions]
+ */
+export async function dl(url, outputPath, options, retryOptions = { count: 3, delay: 3000 }) {
+	let attempt = 0;
+	while (attempt <= retryOptions.count) {
+		try {
+			await download(url, outputPath, options);
+			return;
+		} catch (error) {
+			attempt++;
+			if (attempt > retryOptions.count) throw error;
+
+			if (!options?.silent) {
+				console.log(chalk.yellow(`\ntekrar deneniyor (${attempt}/${retryOptions.count})`));
+			}
+			await new Promise(resolve => setTimeout(resolve, retryOptions.delay));
+		}
 	}
 }
