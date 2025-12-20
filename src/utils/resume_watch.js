@@ -85,14 +85,13 @@ export async function resumeWatch(anime, nextEpisodeNumber) {
             }
 
             updateHistory(anime.NAME, nextEpisodeNumber, totalEpisodes, anilistId);
-            console.log(chalk.green("gecmise islendi"));
 
             if (config.anilistToken && anilistId) {
-                spinner.start("anilist guncelleniyor...");
+                spinner.start("gecmise eklendi");
                 const success = await updateAnilistProgress(anilistId, nextEpisodeNumber, nextEpisodeNumber >= totalEpisodes);
                 spinner.stop();
                 if (success) {
-                    console.log(chalk.green("anilist tamam"));
+                    console.log(chalk.green(""));
                 }
             }
             await new Promise(resolve => setTimeout(resolve, 1500));

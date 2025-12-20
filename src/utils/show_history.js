@@ -84,7 +84,7 @@ export async function showHistory() {
         console.log(chalk.gray(`toplam bolum: ${anime.totalEpisodes}`));
         console.log(chalk.gray(`son izleme tarihi: ${new Date(anime.lastWatchedAt).toLocaleString()}`));
 
-        await inquirer.prompt([{ type: "input", name: "dummy", message: "geri donmek icin enter'a basin..." }]);
+        await inquirer.prompt([{ type: "input", name: "dummy", message: "geri don" }]);
         await showHistory();
     }
 }

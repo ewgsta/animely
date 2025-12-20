@@ -90,7 +90,7 @@ export async function processQueue(queue) {
                     });
                 }
             }, {
-                count: config.retryCount || 3,
+                count: config.retryEnabled ? (config.retryCount || 3) : 0,
                 delay: config.retryDelay || 3000
             });
 

@@ -1,86 +1,142 @@
 import inquirer from "inquirer";
 import chalk from "chalk";
-import { exec } from "child_process";
 import { getConfig, saveConfig } from "./config.js";
 import { line } from "../functions/variables.js";
 import { authenticate, verifyToken } from "./anilist.js";
 import { spinner } from "./spinner.js";
 import { AUTH_URL } from "../constants.js";
+import { commandExists, installPackage } from "./system.js";
 
 export async function showSettings() {
     const config = getConfig();
 
     console.clear();
-    console.log(chalk.bold("\nayarlar"));
-    console.log(chalk.gray(line.repeat(50)));
 
     const { action } = await inquirer.prompt([{
         type: "list",
         name: "action",
         message: "ne degisecek:",
+        pageSize: 15,
         choices: [
             { name: `oynatici (su an: ${chalk.yellow(config.defaultPlayer || "yok")})`, value: "defaultPlayer" },
+            { name: `hizlandirici (aria2) (su an: ${chalk.yellow(config.useAria2 ? "acik" : "kapali")})`, value: "aria2" },
+            ...(config.useAria2 ? [{ name: `   ↳ aria2 baglanti (su an: ${chalk.yellow(config.aria2Connections)}x)`, value: "aria2Connections" }] : []),
             { name: `ayni anda indirme (su an: ${chalk.yellow(config.maxConcurrent)})`, value: "maxConcurrent" },
             { name: `indirme klasoru (su an: ${chalk.yellow(config.downloadDir)})`, value: "downloadDir" },
-            { name: `indirme tekrari (su an: ${chalk.yellow(config.retryCount)}x / ${chalk.yellow(config.retryDelay / 1000)}sn)`, value: "retrySettings" },
+            { name: `indirme tekrari (su an: ${chalk.yellow(config.retryEnabled ? "acik" : "kapali")})`, value: "retryToggle" },
+            ...(config.retryEnabled ? [{ name: `   ↳ tekrar ayarlari (su an: ${chalk.yellow(config.retryCount)}x / ${chalk.yellow(config.retryDelay / 1000)}sn)`, value: "retrySettings" }] : []),
             { name: `anilist baglantisi (su an: ${chalk.yellow(config.anilistUsername || "bagli degil")})`, value: "anilist" },
+            ...(config.anilistToken ? [{ name: "   ↳ baglantiyi kaldir", value: "anilistLogout" }] : []),
             new inquirer.Separator(),
-            { name: "geri", value: "back" }
+            { name: "geri don", value: "back" }
         ]
     }]);
 
     if (action === "back") return;
-    if (action === "anilist") {
-        const choices = [];
 
-        if (config.anilistToken) {
-            choices.push({ name: "baglantiyi kopar", value: "logout" });
+    if (action === "aria2") {
+        const isInstalled = commandExists("aria2");
+
+        if (!isInstalled) {
+            console.log(chalk.yellow("\naria2 (hizli indirme motoru) sistemde bulunamadi."));
+            const { install } = await inquirer.prompt([{
+                type: "confirm",
+                name: "install",
+                message: "otomatik kurayim mi?",
+                default: true
+            }]);
+
+            if (install) {
+                console.log(chalk.yellow("kuruluyor..."));
+                const success = installPackage("aria2");
+                if (success) {
+                    console.log(chalk.green("\nkurulum bitti!"));
+                    config.useAria2 = true;
+                } else {
+                    console.log(chalk.red("\nkurulum basarisiz oldu. lutfen elle kurun."));
+                }
+            } else {
+                console.log(chalk.yellow("tamam, kurmadim."));
+            }
         } else {
-            choices.push({ name: "baglan", value: "auto" });
+            config.useAria2 = !config.useAria2;
+            console.log(chalk.green(`\nhizlandirici ${config.useAria2 ? "acildi" : "kapatildi"}`));
         }
 
-        choices.push({ name: "iptal", value: "cancel" });
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        saveConfig(config);
+        await showSettings();
+        return;
+    }
 
-        const { method } = await inquirer.prompt([{
-            type: "list",
-            name: "method",
-            message: "ne yapalim:",
-            choices
+    if (action === "aria2Connections") {
+        const { limit } = await inquirer.prompt([{
+            type: "number",
+            name: "limit",
+            message: "kac baglanti kullansin (1-16):",
+            default: config.aria2Connections,
+            validate: (input) => (input > 0 && input <= 16) ? true : "1 ile 16 arasi girin"
         }]);
 
-        if (method === "cancel") {
-            await showSettings();
-            return;
-        }
+        config.aria2Connections = limit;
+        saveConfig(config);
+        console.log(chalk.green("\nbaglanti sayisi guncellendi"));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await showSettings();
+        return;
+    }
 
-        if (method === "logout") {
+    if (action === "anilistLogout") {
+        const { confirm } = await inquirer.prompt([{
+            type: "confirm",
+            name: "confirm",
+            message: "anilist baglantisini koparmak istedigine emin misin?",
+            default: false
+        }]);
+
+        if (confirm) {
             config.anilistToken = undefined;
             config.anilistUsername = undefined;
             saveConfig(config);
             console.log(chalk.yellow("\nanilist koptu"));
-            await new Promise(resolve => setTimeout(resolve, 1500));
+        } else {
+            console.log(chalk.gray("iptal edildi"));
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        await showSettings();
+        return;
+    }
+
+    if (action === "anilist") {
+        if (config.anilistToken) {
             await showSettings();
             return;
-        } else if (method === "auto") {
-            try {
-                const token = await authenticate();
-                spinner.start("dogruluyorum...");
-                const username = await verifyToken(token);
-                spinner.stop();
+        }
 
-                if (username) {
-                    config.anilistToken = token;
-                    config.anilistUsername = username;
-                    console.log(chalk.green(`\ngiris yapildi, hosgeldin ${username}`));
-                } else {
-                    console.log(chalk.red("\ntoken geldi ama dogrulayamadim"));
-                }
-            } catch (error) {
-                console.log(chalk.red("\ngiris yapamadim: " + error.message));
+        try {
+            const token = await authenticate();
+            spinner.start("dogruluyorum...");
+            const username = await verifyToken(token);
+            spinner.stop();
+
+            if (username) {
+                config.anilistToken = token;
+                config.anilistUsername = username;
+                console.log(chalk.green(`\ngiris yapildi, hosgeldin ${username}`));
+            } else {
+                console.log(chalk.red("\ntoken geldi ama dogrulayamadim"));
             }
+        } catch (error) {
+            console.log(chalk.red("\ngiris yapamadim: " + error.message));
         }
         await new Promise(resolve => setTimeout(resolve, 2000));
-    } else if (action === "defaultPlayer") {
+        saveConfig(config);
+        await showSettings();
+        return;
+    }
+
+    if (action === "defaultPlayer") {
         const { player } = await inquirer.prompt([{
             type: "list",
             name: "player",
@@ -91,8 +147,36 @@ export async function showSettings() {
             ],
             default: config.defaultPlayer || "vlc"
         }]);
+
+        if (!commandExists(player)) {
+            console.log(chalk.yellow(`\n${player} sistemde bulunamadi.`));
+            const { install } = await inquirer.prompt([{
+                type: "confirm",
+                name: "install",
+                message: "otomatik kurayim mi?",
+                default: true
+            }]);
+
+            if (install) {
+                console.log(chalk.yellow("kuruluyor..."));
+                const success = installPackage(player);
+                if (success) {
+                    console.log(chalk.green(`\n${player} kuruldu!`));
+                } else {
+                    console.log(chalk.red("\nkurulum basarisiz, ama yine de oynatici olarak sectim."));
+                }
+            }
+        }
+
         config.defaultPlayer = player;
-    } else if (action === "maxConcurrent") {
+        saveConfig(config);
+        console.log(chalk.green("\noynatici degistirildi"));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await showSettings();
+        return;
+    }
+
+    if (action === "maxConcurrent") {
         const { limit } = await inquirer.prompt([{
             type: "number",
             name: "limit",
@@ -101,7 +185,14 @@ export async function showSettings() {
             validate: (input) => (input > 0 && input <= 10) ? true : "1 ile 10 arasi girj"
         }]);
         config.maxConcurrent = limit;
-    } else if (action === "downloadDir") {
+        saveConfig(config);
+        console.log(chalk.green("\nlimit ayarlandi"));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await showSettings();
+        return;
+    }
+
+    if (action === "downloadDir") {
         const { dir } = await inquirer.prompt([{
             type: "input",
             name: "dir",
@@ -110,7 +201,23 @@ export async function showSettings() {
             validate: (input) => input.trim() !== "" ? true : "bos gecme"
         }]);
         config.downloadDir = dir;
-    } else if (action === "retrySettings") {
+        saveConfig(config);
+        console.log(chalk.green("\nklasor degisti"));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await showSettings();
+        return;
+    }
+
+    if (action === "retryToggle") {
+        config.retryEnabled = !config.retryEnabled;
+        console.log(chalk.green(`\nindirme tekrari ${config.retryEnabled ? "acildi" : "kapatildi"}`));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        saveConfig(config);
+        await showSettings();
+        return;
+    }
+
+    if (action === "retrySettings") {
         const { count, delay } = await inquirer.prompt([
             {
                 type: "number",
@@ -130,10 +237,11 @@ export async function showSettings() {
 
         config.retryCount = count;
         config.retryDelay = delay * 1000;
-    }
 
-    saveConfig(config);
-    console.log(chalk.green("\nayarlar tamam"));
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    await showSettings();
+        saveConfig(config);
+        console.log(chalk.green("\ntekrar ayarlari guncellendi"));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await showSettings();
+        return;
+    }
 }

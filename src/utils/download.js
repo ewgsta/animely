@@ -7,6 +7,8 @@ import mime from "mime-types";
 import { pipeline } from "stream/promises";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegPath from "ffmpeg-static";
+import { spawn } from "child_process";
+import { getConfig } from "./config.js";
 
 // @ts-ignore
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -26,7 +28,98 @@ export async function download(url, outputPath, options = { silent: false }) {
 		return downloadM3U8(url, outputPath, options);
 	}
 
+	const config = getConfig();
+	if (config.useAria2) {
+		return downloadWithAria2(url, outputPath, options);
+	}
+
 	let startByte = 0;
+
+
+	/**
+	 * @param {string} url
+	 * @param {string} outputPath
+	 * @param {{ silent?: boolean, onProgress?: (data: any) => void }} [options]
+	 */
+	async function downloadWithAria2(url, outputPath, options = { silent: false }) {
+		const __dirname = outputPath.substring(0, outputPath.lastIndexOf("\\"));
+		const filename = outputPath.substring(outputPath.lastIndexOf("\\") + 1) + ".mp4"; // Varsayilan olarak mp4 ekliyoruz, aria2 otomatik belirlemiyor bu modda
+
+		const config = getConfig();
+		const connections = String(config.aria2Connections || 16);
+
+		if (fs.existsSync(outputPath + ".mp4")) {
+			if (!options.silent) console.log(chalk.green(`dosya zaten inmis (aria2): ${outputPath}.mp4`));
+			if (options.onProgress) options.onProgress({ percent: "100", downloaded: 0, total: 0, speed: 0, eta: 0 });
+			return;
+		}
+
+		if (!options.silent) console.log(chalk.cyan("\naria2 motoru calisiyor..."));
+
+		return new Promise((resolve, reject) => {
+			const aria2 = spawn("aria2c", [
+				"-x", connections,
+				"-s", connections,
+				"-k", "1M",
+				"-d", __dirname,
+				"-o", filename,
+				url
+			]);
+
+			aria2.stdout.on("data", (data) => {
+				const output = data.toString();
+
+				const percentMatch = output.match(/\((\d+)%\)/);
+				const speedMatch = output.match(/DL:([\w.]+(?:Ki|Mi|Gi)?B)/);
+				const etaMatch = output.match(/ETA:([\w:]+)/);
+				const totalMatch = output.match(/\/([\d.]+[KMG]iB)/);
+
+				if (percentMatch) {
+					const percent = percentMatch[1];
+					const speedRaw = speedMatch ? speedMatch[1] : "0B";
+					const eta = 0;
+
+					if (options.onProgress) {
+						options.onProgress({
+							percent: percent,
+							downloaded: 0,
+							total: 0,
+							speed: 0,
+							eta: 0
+						});
+					}
+
+					if (!options.silent) {
+						const barLength = 30;
+						const filledLength = Math.floor((parseInt(percent) / 100) * barLength);
+						const progressBar = "█".repeat(filledLength) + "░".repeat(barLength - filledLength);
+
+						const out = `[${progressBar}] ${percent}% - hiz: ${speedRaw}`;
+						process.stdout.clearLine(0);
+						process.stdout.cursorTo(0);
+						process.stdout.write(chalk.gray(out));
+					}
+				}
+			});
+
+			aria2.on("close", (code) => {
+				if (code === 0) {
+					if (!options.silent) {
+						process.stdout.write("\n");
+						console.log(chalk.green(`dosya indi: ${outputPath}.mp4`));
+					}
+					resolve();
+				} else {
+					reject(new Error(`aria2c hata koduyla kapandi: ${code}`));
+				}
+			});
+
+			aria2.on("error", (err) => {
+				reject(new Error(`aria2c baslatilamadi: ${err.message}`));
+			});
+		});
+	}
+
 	let totalLength = 0;
 	let extension = "";
 	let fullPath = "";

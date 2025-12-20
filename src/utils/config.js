@@ -16,7 +16,10 @@ const defaultConfig = {
 	downloadDir: path.join(process.cwd(), "animely-downloads"),
 	defaultPlayer: "", // "vlc" | "mpv"
 	retryCount: 3,
-	retryDelay: 3000
+	retryDelay: 3000,
+	useAria2: false,
+	aria2Connections: 16,
+	retryEnabled: true
 };
 
 /**
@@ -26,6 +29,9 @@ const defaultConfig = {
  * @property {string} defaultPlayer
  * @property {number} retryCount
  * @property {number} retryDelay
+ * @property {boolean} useAria2
+ * @property {number} aria2Connections
+ * @property {boolean} retryEnabled
  * @property {string} [anilistToken]
  * @property {string} [anilistUsername]
  */
