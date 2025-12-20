@@ -3,6 +3,8 @@ import chalk from "chalk";
 import { loadHistory } from "./history.js";
 import { line } from "../functions/variables.js";
 
+import { stats } from "./stats.js";
+
 export async function showHistory() {
     const history = loadHistory();
     const items = Object.values(history);
@@ -19,6 +21,7 @@ export async function showHistory() {
         name: "type",
         message: "hangi listeyi goruntulemek istersiniz?",
         choices: [
+            { name: "istatistikler", value: "stats" },
             { name: `devam edenler (${inProgress.length})`, value: "progress" },
             { name: `tamamlananlar (${completed.length})`, value: "completed" },
             new inquirer.Separator(),
@@ -27,6 +30,12 @@ export async function showHistory() {
     }]);
 
     if (type === "back") return;
+
+    if (type === "stats") {
+        await stats();
+        await showHistory();
+        return;
+    }
 
     if (type === "completed") {
         console.clear();
