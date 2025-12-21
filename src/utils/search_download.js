@@ -64,11 +64,17 @@ export async function searchAndDownload(animes, downloadQueue) {
                 type: "list",
                 name: "anime",
                 message: "hangi animeyi secmek istiyorsunuz?",
-                choices: foundAnimes.map(anime => ({
-                    name: `${anime.NAME} ${chalk.gray(`(sezon ${anime.SEASON_NUMBER}, ${anime.TOTAL_EPISODES} bolum)`)}`,
-                    value: anime,
-                })),
+                choices: [
+                    { name: "geri don", value: "back" },
+                    new inquirer.Separator(),
+                    ...foundAnimes.map(anime => ({
+                        name: `${anime.NAME} ${chalk.gray(`(sezon ${anime.SEASON_NUMBER}, ${anime.TOTAL_EPISODES} bolum)`)}`,
+                        value: anime,
+                    }))
+                ],
             }]);
+
+            if (anime === "back") continue;
 
             selectedAnime = anime;
             spinner.start();
@@ -100,9 +106,36 @@ export async function searchAndDownload(animes, downloadQueue) {
         break;
     }
 
+    const config = getConfig();
     console.clear();
-    console.log(chalk.green(`\n${selectedAnime.NAME} secildi!`));
-    console.log(chalk.gray(`toplam ${episodes.length} bolum mevcut`));
+
+    if (config.showAnimeDetails !== false) {
+        // Detailed View
+        console.log(chalk.bold.hex("#38bdf8")(selectedAnime.NAME));
+        console.log(chalk.gray("─".repeat(50)));
+
+        console.log(`${chalk.bold("Bolum Sayisi:")} ${selectedAnime.TOTAL_EPISODES}`);
+        console.log(`${chalk.bold("Sezon:")} ${selectedAnime.SEASON_NUMBER}`);
+
+        if (selectedAnime.CATEGORIES && selectedAnime.CATEGORIES.length > 0) {
+            console.log(`${chalk.bold("Kategoriler:")} ${selectedAnime.CATEGORIES.join(", ")}`);
+        }
+
+        if (selectedAnime.DESCRIPTION) {
+            console.log(chalk.gray("─".repeat(50)));
+            console.log(chalk.italic(selectedAnime.DESCRIPTION));
+        } else if (selectedAnime.SYNOPSIS) { // Fallback if property name differs
+            console.log(chalk.gray("─".repeat(50)));
+            console.log(chalk.italic(selectedAnime.SYNOPSIS));
+        }
+
+        console.log(chalk.gray("─".repeat(50)));
+        console.log("");
+    } else {
+        // Simple View
+        console.log(chalk.green(`\n${selectedAnime.NAME} secildi!`));
+        console.log(chalk.gray(`toplam ${episodes.length} bolum mevcut`));
+    }
 
     while (true) {
         const { action } = await inquirer.prompt([{

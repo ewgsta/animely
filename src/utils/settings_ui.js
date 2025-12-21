@@ -25,6 +25,7 @@ export async function showSettings() {
             { name: `indirme klasoru (su an: ${chalk.yellow(config.downloadDir)})`, value: "downloadDir" },
             { name: `indirme tekrari (su an: ${chalk.yellow(config.retryEnabled ? "acik" : "kapali")})`, value: "retryToggle" },
             ...(config.retryEnabled ? [{ name: `   ↳ tekrar ayarlari (su an: ${chalk.yellow(config.retryCount)}x / ${chalk.yellow(config.retryDelay / 1000)}sn)`, value: "retrySettings" }] : []),
+            { name: `anime detaylarini goster (su an: ${chalk.yellow(config.showAnimeDetails !== false ? "acik" : "kapali")})`, value: "detailsToggle" },
             { name: `anilist baglantisi (su an: ${chalk.yellow(config.anilistUsername || "bagli degil")})`, value: "anilist" },
             ...(config.anilistToken ? [{ name: "   ↳ baglantiyi kaldir", value: "anilistLogout" }] : []),
             { name: `telemetri (su an: ${chalk.yellow(config.telemetryEnabled ? "acik" : "kapali")})`, value: "telemetryToggle" },
@@ -35,7 +36,15 @@ export async function showSettings() {
 
     if (action === "back") return;
 
-    // ... (aria2 and anilist handlers remain the same)
+    if (action === "detailsToggle") {
+        config.showAnimeDetails = config.showAnimeDetails === false ? true : false;
+        saveConfig(config);
+        console.log(chalk.green(`\nanime detaylari ${config.showAnimeDetails ? "acildi" : "kapatildi"}`));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await showSettings();
+        return;
+    }
+
 
     if (action === "anilistLogout") {
         const { confirm } = await inquirer.prompt([{

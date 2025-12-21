@@ -21,7 +21,8 @@ const defaultConfig = {
 	aria2Connections: 16,
 	retryEnabled: true,
 	telemetryId: "",
-	telemetryEnabled: null
+	telemetryEnabled: null,
+	showAnimeDetails: true
 };
 
 /**
@@ -38,6 +39,7 @@ const defaultConfig = {
  * @property {string} [anilistUsername]
  * @property {string} [telemetryId]
  * @property {boolean} [telemetryEnabled]
+ * @property {boolean} [showAnimeDetails]
  */
 
 /**
