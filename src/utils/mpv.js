@@ -15,7 +15,9 @@ export async function getMpvPath() {
 		const commonPaths = [
 			"C:\\Program Files\\MPV\\mpv.exe",
 			"C:\\Program Files (x86)\\MPV\\mpv.exe",
-			"C:\\ProgramData\\chocolatey\\bin\\mpv.exe"
+			"C:\\ProgramData\\chocolatey\\bin\\mpv.exe",
+			// Scoop Path
+			`${process.env.USERPROFILE}\\scoop\\apps\\mpv\\current\\mpv.exe`
 		];
 
 		for (const p of commonPaths) {

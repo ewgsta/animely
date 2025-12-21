@@ -55,7 +55,25 @@ export function commandExists(program) {
 
     try {
         if (osType === "windows") {
-            execSync(`where ${command}`, { stdio: "ignore" });
+            try {
+                execSync(`where ${command}`, { stdio: "ignore" });
+                return true;
+            } catch {
+                const paths = [
+                    `C:\\Program Files\\VideoLAN\\VLC\\vlc.exe`,
+                    `C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe`,
+                    `C:\\Program Files\\MPV\\mpv.exe`,
+                    `C:\\ProgramData\\chocolatey\\bin\\mpv.exe`,
+                    `${process.env.USERPROFILE}\\scoop\\apps\\mpv\\current\\mpv.exe`
+                ];
+
+                if (program === 'vlc') {
+                    if (require('fs').existsSync('C:\\Program Files\\VideoLAN\\VLC\\vlc.exe')) return true;
+                    if (require('fs').existsSync('C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe')) return true;
+                }
+
+                return false;
+            }
         } else {
             execSync(`which ${command}`, { stdio: "ignore" });
         }
