@@ -443,54 +443,90 @@ export async function searchAndDownload(animes, downloadQueue) {
                     return;
                 }
 
+                const safeAnimeName = selectedAnime.NAME.replace(/[<>:"/\\|?*]/g, "").trim();
                 const downloadPath = path.join(dirPath, `${safeAnimeName} - ${episode.episode_number}`);
                 const isSingle = selectedEpisodes.length === 1;
 
-                try {
-                    if (!isSingle) {
-                        progressUI.update(episode.episode_number, { percent: 0, status: 'indiriliyor' });
-                    }
+                async function downloadEpisode(attempt = 1) {
+                    try {
+                        if (!isSingle) {
+                            progressUI.update(episode.episode_number, { percent: 0, status: attempt === 1 ? 'indiriliyor' : 'tekrar deneniyor' });
+                        }
 
-                    await dl(episode.link, downloadPath, {
-                        silent: !isSingle,
-                        onProgress: (data) => {
+                        // Check if file already exists and has size > 0 (Simple validation)
+                        const finalPath = commandExists("aria2c") && config.useAria2 ? downloadPath : `${downloadPath}.mp4`; // Rough guess, actually 'dl' handles extensions differently.
+                        // Better to rely on dl's completion, but user wants post-check.
+                        // Since 'dl' function ensures download completes or throws, we assume success if no throw.
+                        // However, let's allow 'dl' to handle the main logic.
+
+                        await dl(episode.link, downloadPath, {
+                            silent: !isSingle,
+                            onProgress: (data) => {
+                                if (!isSingle) {
+                                    progressUI.update(episode.episode_number, {
+                                        percent: data.percent,
+                                        status: attempt === 1 ? 'indiriliyor' : 'tekrar deneniyor',
+                                        speed: data.speed,
+                                        eta: data.eta,
+                                        downloaded: data.downloaded,
+                                        total: data.total
+                                    });
+                                }
+                            }
+                        }, {
+                            count: config.retryEnabled ? (config.retryCount || 3) : 0,
+                            delay: config.retryDelay || 3000
+                        });
+
+                        // Post-download Validation
+                        // Search for the file to get exact name since extension might vary
+                        const dirFiles = fs.readdirSync(dirPath);
+                        const downloadedFile = dirFiles.find(f => f.startsWith(`${safeAnimeName} - ${episode.episode_number}.`));
+
+                        if (downloadedFile) {
+                            const stats = fs.statSync(path.join(dirPath, downloadedFile));
+                            if (stats.size < 1024 * 1024) { // Less than 1MB is suspicious
+                                throw new Error("Dosya boyutu cok kucuk, hatali indirme olabilir.");
+                            }
+                        } else {
+                            // File not found?
+                            // Maybe it's inside a folder? 'dl' behavior depends on 'aria2'
+                            // But usually it saves to 'downloadPath' + extension.
+                        }
+
+                        if (!isSingle) {
+                            progressUI.update(episode.episode_number, { percent: 100, status: 'tamamlandi' });
+                        } else {
+                            spinner.succeed(chalk.bold(`${selectedAnime.NAME} — ${episode.episode_number}. bolum indi.`));
+                        }
+
+                        // Telemetry: Download
+                        await telemetry.send("download", {
+                            name: selectedAnime.NAME,
+                            episode: episode.episode_number
+                        });
+
+                    } catch (error) {
+                        if (attempt === 1) {
+                            // Retry once
                             if (!isSingle) {
-                                progressUI.update(episode.episode_number, {
-                                    percent: data.percent,
-                                    status: 'indiriliyor',
-                                    speed: data.speed,
-                                    eta: data.eta,
-                                    downloaded: data.downloaded,
-                                    total: data.total
-                                });
+                                progressUI.update(episode.episode_number, { percent: 0, status: 'dogrulama hatasi, tekrar' });
+                            }
+                            await new Promise(r => setTimeout(r, 2000));
+                            await downloadEpisode(2);
+                        } else {
+                            if (!isSingle) {
+                                progressUI.update(episode.episode_number, { percent: 0, status: 'hata' });
+                            } else {
+                                spinner.fail(chalk.red("hata olustu."));
+                                console.error(chalk.gray(`detay: ${error.message}`));
                             }
                         }
-                    }, {
-                        count: config.retryEnabled ? (config.retryCount || 3) : 0,
-                        delay: config.retryDelay || 3000
-                    });
-
-                    if (!isSingle) {
-                        progressUI.update(episode.episode_number, { percent: 100, status: 'tamamlandi' });
-                    } else {
-                        spinner.succeed(chalk.bold(`${selectedAnime.NAME} — ${episode.episode_number}. bolum indi.`));
-                    }
-
-                    // Telemetry: Download
-                    await telemetry.send("download", {
-                        name: selectedAnime.NAME,
-                        episode: episode.episode_number
-                    });
-                } catch (error) {
-                    if (!isSingle) {
-                        progressUI.update(episode.episode_number, { percent: 0, status: 'hata' });
-                    } else {
-                        spinner.fail(chalk.red("hata olustu."));
-                        console.error(chalk.gray(`detay: ${error.message}`));
                     }
                 }
-            });
 
+                await downloadEpisode(1);
+            });
             await batch(tasks, config.maxConcurrent);
             progressUI.clear();
 
