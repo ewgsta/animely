@@ -7,6 +7,7 @@ import { initDiscordRpc, setActivity } from "./utils/discord.js";
 import { timeFormat } from "./functions/time.js";
 import { API_URL } from "./constants.js";
 import { getAnimeList } from "./utils/data_manager.js";
+import { telemetry } from "./telemetry/index.js";
 
 import { showSettings } from "./utils/settings_ui.js";
 import { showHistory } from "./utils/show_history.js";
@@ -20,6 +21,7 @@ import chalk from "chalk";
 import fs from "fs";
 import inquirer from "inquirer";
 import updateNotifier from "update-notifier";
+import { runSpeedTest } from "./utils/speedtest.js";
 
 process.on('SIGINT', () => {
 	console.log(chalk.gray("\ngorusmek uzere!"));
@@ -50,10 +52,9 @@ if (notifier.update) {
 	}
 }
 
-import { runSpeedTest } from "./utils/speedtest.js";
-
 (async () => {
 	try {
+		await telemetry.init();
 		await initDiscordRpc();
 
 		const speedTestPromise = runSpeedTest();
@@ -179,6 +180,7 @@ import { runSpeedTest } from "./utils/speedtest.js";
 				});
 			}
 
+
 			if (downloadQueue.length > 0) {
 				choices.unshift({ name: `indirme kuyrugunu baslat (${downloadQueue.length} bolum)`, value: "start_queue" });
 				choices.unshift({ name: "indirme kuyrugunu temizle", value: "clear_queue" });
@@ -239,6 +241,7 @@ import { runSpeedTest } from "./utils/speedtest.js";
 			console.log(chalk.gray("\ngorusmek uzere!"));
 			process.exit(0);
 		}
+		telemetry.error(error, "main_loop");
 		spinner.fail("beklenmeyen bir hata olustu, lutfen daha sonra tekrar deneyiniz.");
 		console.error(chalk.gray(`hata detayi: ${error.message}`));
 	}

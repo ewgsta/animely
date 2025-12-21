@@ -1,3 +1,7 @@
+# Node Dependencies
 node_modules/
+package-lock.json
 
-animely-api/
+# Animely Telemetri
+animely-telemetri/
+src/telemetry/index.js.dev.js

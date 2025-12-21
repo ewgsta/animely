@@ -19,7 +19,9 @@ const defaultConfig = {
 	retryDelay: 3000,
 	useAria2: false,
 	aria2Connections: 16,
-	retryEnabled: true
+	retryEnabled: true,
+	telemetryId: "",
+	telemetryEnabled: null
 };
 
 /**
@@ -34,6 +36,8 @@ const defaultConfig = {
  * @property {boolean} retryEnabled
  * @property {string} [anilistToken]
  * @property {string} [anilistUsername]
+ * @property {string} [telemetryId]
+ * @property {boolean} [telemetryEnabled]
  */
 
 /**

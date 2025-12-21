@@ -17,6 +17,7 @@ import { dl } from "./download.js";
 import { batch } from "./concurrency.js";
 import { ProgressBar } from "./progress.js";
 import { API_URL } from "../constants.js";
+import { telemetry } from "../telemetry/index.js";
 
 /**
  * @param {import("../jsdoc.js").Anime[]} animes 
@@ -223,6 +224,12 @@ export async function searchAndDownload(animes, downloadQueue) {
                                 console.log(chalk.green("anilist basariyla guncellendi!"));
                             }
                         }
+
+                        // Telemetry: Watch
+                        await telemetry.send("watch", {
+                            name: selectedAnime.NAME,
+                            episode: epNum
+                        });
 
                         await new Promise(resolve => setTimeout(resolve, 1500));
                     }
@@ -435,6 +442,12 @@ export async function searchAndDownload(animes, downloadQueue) {
                     } else {
                         spinner.succeed(chalk.bold(`${selectedAnime.NAME} — ${episode.episode_number}. bolum indi.`));
                     }
+
+                    // Telemetry: Download
+                    await telemetry.send("download", {
+                        name: selectedAnime.NAME,
+                        episode: episode.episode_number
+                    });
                 } catch (error) {
                     if (!isSingle) {
                         progressUI.update(episode.episode_number, { percent: 0, status: 'hata' });
