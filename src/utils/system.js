@@ -78,8 +78,6 @@ export function installPackage(program) {
         return false;
     }
 
-    console.log(chalk.gray(`sistem: ${osType}, kurulacak: ${program}`));
-
     try {
         if (osType === "windows") {
             // Winget
@@ -87,7 +85,6 @@ export function installPackage(program) {
                 console.log(chalk.red("winget bulunamadi."));
                 return false;
             }
-            console.log(chalk.yellow(`winget ile kuruluyor: ${pkg.win}`));
             spawnSync("winget", ["install", "-e", "--id", pkg.win], { stdio: "inherit" });
             return true;
 
@@ -97,7 +94,6 @@ export function installPackage(program) {
                 console.log(chalk.red("homebrew bulunamadi."));
                 return false;
             }
-            console.log(chalk.yellow(`brew ile kuruluyor: ${pkg.mac}`));
             const args = ["install", ...pkg.mac.split(" ")];
             spawnSync("brew", args, { stdio: "inherit" });
             return true;
@@ -105,12 +101,10 @@ export function installPackage(program) {
         } else if (osType === "linux") {
             // Apt / Pacman
             if (checkCommand("apt")) {
-                console.log(chalk.yellow(`apt ile kuruluyor: ${pkg.linux}`));
                 spawnSync("sudo", ["apt", "update"], { stdio: "inherit" });
                 spawnSync("sudo", ["apt", "install", "-y", pkg.linux], { stdio: "inherit" });
                 return true;
             } else if (checkCommand("pacman")) {
-                console.log(chalk.yellow(`pacman ile kuruluyor: ${pkg.linux}`));
                 spawnSync("sudo", ["pacman", "-S", "--noconfirm", pkg.linux], { stdio: "inherit" });
                 return true;
             } else {

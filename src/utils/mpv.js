@@ -36,7 +36,7 @@ export async function getMpvPath() {
 		} catch (e) {
 			// bulamadım
 		}
-		
+
 		if (fs.existsSync("/usr/bin/mpv")) return "/usr/bin/mpv";
 		if (fs.existsSync("/usr/local/bin/mpv")) return "/usr/local/bin/mpv";
 		if (fs.existsSync("/opt/homebrew/bin/mpv")) return "/opt/homebrew/bin/mpv";
@@ -74,7 +74,7 @@ export async function installMpv() {
 		}
 	} else if (platform === "linux") {
 		console.log(chalk.cyan("mpv player bulunamadi. paket yoneticisi ile kurulmaya calisiliyor..."));
-		
+
 		const managers = [
 			{ cmd: "apt-get", install: "sudo apt-get update && sudo apt-get install mpv -y" },
 			{ cmd: "dnf", install: "sudo dnf install mpv -y" },
@@ -119,8 +119,8 @@ export async function openInMpv(url) {
 	if (!mpvPath) throw new Error("mpv player yolu bulunamadi.");
 
 	return new Promise((resolve, reject) => {
-		const args = [url, "--force-window"];
-		
+		const args = [url, "--force-window", "--fs"];
+
 		const player = spawn(mpvPath, args, {
 			stdio: "ignore",
 			detached: true

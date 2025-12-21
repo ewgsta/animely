@@ -36,7 +36,7 @@ export async function getVlcPath() {
 		} catch (e) {
 			// bulamadım
 		}
-		
+
 		if (fs.existsSync("/usr/bin/vlc")) return "/usr/bin/vlc";
 		if (fs.existsSync("/Applications/VLC.app/Contents/MacOS/VLC")) return "/Applications/VLC.app/Contents/MacOS/VLC";
 	}
@@ -73,7 +73,7 @@ export async function installVlc() {
 		}
 	} else if (platform === "linux") {
 		console.log(chalk.cyan("vlc player bulunamadi. paket yoneticisi ile kurulmaya calisiliyor..."));
-		
+
 		const managers = [
 			{ cmd: "apt-get", install: "sudo apt-get update && sudo apt-get install vlc -y" },
 			{ cmd: "dnf", install: "sudo dnf install vlc -y" },
@@ -93,7 +93,7 @@ export async function installVlc() {
 				continue;
 			}
 		}
-		
+
 		console.error(chalk.red("uygun paket yoneticisi bulunamadi. lutfen vlc'yi manuel olarak kurunuz."));
 		return false;
 	}
@@ -121,9 +121,9 @@ export async function openInVlc(url) {
 	if (!vlcPath) throw new Error("vlc path bulunamadi.");
 
 	console.log(chalk.cyan("vlc baslatiliyor..."));
-	
+
 	return new Promise((resolve, reject) => {
-		const child = spawn(vlcPath, [url], {
+		const child = spawn(vlcPath, ["--fullscreen", url], {
 			stdio: "ignore"
 		});
 
