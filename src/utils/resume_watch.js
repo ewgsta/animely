@@ -5,7 +5,7 @@ import { getConfig } from "./storage/config.js";
 import { formatName, getLink } from "../functions/episodes.js";
 import { openInVlc } from "./players/vlc.js";
 import { openInMpv } from "./players/mpv.js";
-import { setActivity } from "./discord.js";
+import { setActivity, setWatchingActivity } from "./discord.js";
 import { updateHistory, loadHistory } from "./storage/history.js";
 import { searchAnime, updateAnilistProgress } from "./anilist.js";
 import { spinner } from "./spinner.js";
@@ -51,7 +51,12 @@ export async function resumeWatch(anime, nextEpisodeNumber) {
     const player = config.defaultPlayer || "vlc";
 
     console.log(chalk.green(`\n${anime.NAME} — ${nextEpisodeNumber}. bölüm açılıyor (${player})...`));
-    setActivity(`${anime.NAME}`, `${nextEpisodeNumber}. Bölüm İzleniyor`);
+    setWatchingActivity({
+        animeName: anime.NAME,
+        animeImage: anime.FIRST_IMAGE,
+        episode: nextEpisodeNumber,
+        totalEpisodes: episodes.length
+    });
 
     try {
         if (player === "mpv") {

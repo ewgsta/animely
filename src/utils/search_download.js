@@ -9,7 +9,7 @@ import { searchAnimes } from "./search.js";
 import { formatName, getLink } from "../functions/episodes.js";
 import { openInVlc } from "./players/vlc.js";
 import { openInMpv } from "./players/mpv.js";
-import { setActivity } from "./discord.js";
+import { setActivity, setWatchingActivity } from "./discord.js";
 import { updateHistory, loadHistory } from "./storage/history.js";
 import { searchAnime, updateAnilistProgress } from "./anilist.js";
 import { spinner } from "./spinner.js";
@@ -212,7 +212,12 @@ export async function searchAndDownload(animes, downloadQueue) {
                     console.clear();
                     console.log(chalk.green(`${selectedAnime.NAME} — ${episode.episode_number}. Bölüm ${player} ile açılıyor...`));
 
-                    setActivity(`${selectedAnime.NAME}`, `${episode.episode_number}. Bölüm İzleniyor`);
+                    setWatchingActivity({
+                        animeName: selectedAnime.NAME,
+                        animeImage: selectedAnime.FIRST_IMAGE,
+                        episode: episode.episode_number,
+                        totalEpisodes: episodes.length
+                    });
 
                     if (player === "mpv") {
                         await openInMpv(episode.link);
