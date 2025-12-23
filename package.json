@@ -1,6 +1,6 @@
 {
   "name": "animely",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "animely-cli, animely.net üzerinden indirme ve izlemeye yarar",
   "main": "src/index.js",
   "type": "module",
