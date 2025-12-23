@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/ewgsta/animely/main/docs/img/phee.png" alt="Animely Logo" style="border-radius: 15px; width: 200px; height: auto;">
+  <img src="https://r2.fakecrime.bio/uploads/fbb7b3a0-7735-4253-af71-fd2e0a9c5110.png" alt="Animely Logo" style="border-radius: 15px; width: 200px; height: auto;">
 </div>
 
 **Animely, terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI aracıdır.**
