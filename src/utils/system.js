@@ -72,6 +72,18 @@ export function commandExists(program) {
                     if (require('fs').existsSync('C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe')) return true;
                 }
 
+                if (program === 'mpv') {
+                    if (require('fs').existsSync('C:\\Program Files\\MPV\\mpv.exe')) return true;
+                    if (require('fs').existsSync('C:\\ProgramData\\chocolatey\\bin\\mpv.exe')) return true;
+                    if (require('fs').existsSync(`${process.env.USERPROFILE}\\scoop\\apps\\mpv\\current\\mpv.exe`)) return true;
+                }
+
+                if (program === 'aria2') {
+                    // Check possible locations if aria2 is installed manually or via package managers but not in PATH
+                    if (require('fs').existsSync('C:\\ProgramData\\chocolatey\\bin\\aria2c.exe')) return true;
+                    if (require('fs').existsSync(`${process.env.USERPROFILE}\\scoop\\apps\\aria2\\current\\aria2c.exe`)) return true;
+                }
+
                 return false;
             }
         } else {

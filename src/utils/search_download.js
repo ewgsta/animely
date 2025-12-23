@@ -18,6 +18,7 @@ import { batch } from "./concurrency.js";
 import { ProgressBar } from "./progress.js";
 import { API_URL } from "../constants.js";
 import { telemetry } from "../telemetry/index.js";
+import { commandExists } from "./system.js";
 
 /**
  * @param {import("../jsdoc.js").Anime[]} animes 

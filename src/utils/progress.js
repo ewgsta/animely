@@ -40,7 +40,8 @@ export class ProgressBar {
 
         const output = activeItems.map(data => {
             const width = 20;
-            const filled = Math.floor((data.percent / 100) * width);
+            const percent = typeof data.percent === 'number' && !isNaN(data.percent) ? data.percent : 0;
+            const filled = Math.floor((percent / 100) * width);
             const progressBar = "█".repeat(filled) + "░".repeat(width - filled);
 
             const name = data.name.length > 25 ? data.name.substring(0, 22) + "..." : data.name.padEnd(25);
@@ -55,7 +56,7 @@ export class ProgressBar {
             const downloadedStr = data.downloaded ? bytes(data.downloaded) : '0B';
             const totalStr = data.total ? bytes(data.total) : '0B';
 
-            return `${name}: [${progressBar}] %${data.percent.toFixed(1)} (${downloadedStr} / ${totalStr}) - ${speedStr} - kalan: ${etaStr}`;
+            return `${name}: [${progressBar}] %${percent.toFixed(1)} (${downloadedStr} / ${totalStr}) - ${speedStr} - kalan: ${etaStr}`;
         }).join("\n");
 
         if (this.lastLineCount > 0) {

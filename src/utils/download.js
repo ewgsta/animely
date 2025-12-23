@@ -49,9 +49,12 @@ export async function download(url, outputPath, options = { silent: false }) {
 		const connections = String(config.aria2Connections || 16);
 
 		if (fs.existsSync(outputPath + ".mp4")) {
-			if (!options.silent) console.log(chalk.green(`dosya zaten inmis (aria2): ${outputPath}.mp4`));
-			if (options.onProgress) options.onProgress({ percent: "100", downloaded: 0, total: 0, speed: 0, eta: 0 });
-			return;
+			const existingStats = fs.statSync(outputPath + ".mp4");
+			if (existingStats.size > 0) {
+				if (!options.silent) console.log(chalk.green(`dosya zaten inmis (aria2): ${outputPath}.mp4`));
+				if (options.onProgress) options.onProgress({ percent: "100", downloaded: existingStats.size, total: existingStats.size, speed: 0, eta: 0 });
+				return;
+			}
 		}
 
 		if (!options.silent) console.log(chalk.cyan("\naria2 motoru calisiyor..."));
