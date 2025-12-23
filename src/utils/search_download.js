@@ -212,24 +212,26 @@ export async function searchAndDownload(animes, downloadQueue) {
 
                     console.clear();
 
-                    // Kaydedilmiş pozisyon kontrolü
-                    const savedProgress = getWatchPosition(selectedAnime.NAME, episode.episode_number);
+                    // MPV için kaldığı yerden devam özelliği
                     let startPosition = 0;
+                    if (player === "mpv") {
+                        const savedProgress = getWatchPosition(selectedAnime.NAME, episode.episode_number);
 
-                    if (savedProgress && savedProgress.position > 10) {
-                        const minutes = Math.floor(savedProgress.position / 60);
-                        const seconds = savedProgress.position % 60;
-                        const { resumeFromSaved } = await inquirer.prompt([{
-                            type: "confirm",
-                            name: "resumeFromSaved",
-                            message: `Kaldığınız yerden devam etmek ister misiniz? (${minutes}:${seconds.toString().padStart(2, '0')})`,
-                            default: true
-                        }]);
+                        if (savedProgress && savedProgress.position > 10) {
+                            const minutes = Math.floor(savedProgress.position / 60);
+                            const seconds = savedProgress.position % 60;
+                            const { resumeFromSaved } = await inquirer.prompt([{
+                                type: "confirm",
+                                name: "resumeFromSaved",
+                                message: `Kaldığınız yerden devam etmek ister misiniz? (${minutes}:${seconds.toString().padStart(2, '0')})`,
+                                default: true
+                            }]);
 
-                        if (resumeFromSaved) {
-                            startPosition = savedProgress.position;
-                        } else {
-                            clearWatchPosition(selectedAnime.NAME, episode.episode_number);
+                            if (resumeFromSaved) {
+                                startPosition = savedProgress.position;
+                            } else {
+                                clearWatchPosition(selectedAnime.NAME, episode.episode_number);
+                            }
                         }
                     }
 
@@ -242,16 +244,15 @@ export async function searchAndDownload(animes, downloadQueue) {
                         totalEpisodes: episodes.length
                     });
 
-                    const onPlayerClose = (position, duration) => {
-                        if (position > 10 && duration > 0) {
-                            updateWatchPosition(selectedAnime.NAME, episode.episode_number, position, duration);
-                        }
-                    };
-
                     if (player === "mpv") {
+                        const onPlayerClose = (position, duration) => {
+                            if (position > 10 && duration > 0) {
+                                updateWatchPosition(selectedAnime.NAME, episode.episode_number, position, duration);
+                            }
+                        };
                         await openInMpv(episode.link, { startPosition, onClose: onPlayerClose });
                     } else {
-                        await openInVlc(episode.link, { startPosition, onClose: onPlayerClose });
+                        await openInVlc(episode.link);
                     }
 
                     setActivity("Ana menüde geziniyor");

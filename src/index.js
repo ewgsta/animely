@@ -99,8 +99,8 @@ if (notifier.update) {
 					name: "playerToInstall",
 					message: "Hangi oynatıcıyı kurmak istersiniz?",
 					choices: [
-						{ name: "VLC Media Player", value: "VideoLAN.VLC" },
-						{ name: "MPV Player", value: "io.mpv.mpv" }
+						{ name: "MPV Player (Önerilen)", value: "io.mpv.mpv" },
+						{ name: "VLC Media Player", value: "VideoLAN.VLC" }
 					]
 				}]);
 
@@ -127,8 +127,8 @@ if (notifier.update) {
 				name: "player",
 				message: "Varsayılan oynatıcı olarak hangisi kullanılsın:",
 				choices: [
-					{ name: "VLC Player (Önerilen)", value: "vlc" },
-					{ name: "MPV Player", value: "mpv" }
+					{ name: "MPV Player (Önerilen - Kaldığı yerden devam desteği)", value: "mpv" },
+					{ name: "VLC Player", value: "vlc" }
 				]
 			}]);
 			config.defaultPlayer = player;

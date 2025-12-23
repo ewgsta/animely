@@ -112,10 +112,10 @@ export async function showSettings() {
             name: "player",
             message: "Varsayılan oynatıcıyı seçin:",
             choices: [
-                { name: "VLC Media Player", value: "vlc" },
-                { name: "MPV Player", value: "mpv" }
+                { name: "MPV Player (Önerilen - Kaldığı yerden devam desteği)", value: "mpv" },
+                { name: "VLC Media Player", value: "vlc" }
             ],
-            default: config.defaultPlayer || "vlc"
+            default: config.defaultPlayer || "mpv"
         }]);
 
         if (!commandExists(player)) {
