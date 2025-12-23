@@ -22,10 +22,208 @@ import { telemetry } from "../telemetry/index.js";
 import { commandExists } from "./system.js";
 
 /**
+ * @param {import("../jsdoc.js").Anime[]|null} animes 
+ * @param {import("./storage/queue.js").QueueItem[]} downloadQueue
+ * @param {import("../sources/index.js").Source} source
+ */
+export async function searchAndDownload(animes, downloadQueue, source) {
+    // Kaynak Animecix ise farklı akış kullan
+    if (source.id === "animecix") {
+        return searchAndDownloadAnimecix(downloadQueue, source);
+    }
+
+    // Animely için mevcut akış
+    return searchAndDownloadAnimely(animes, downloadQueue);
+}
+
+/**
+ * Animecix kaynağı için arama ve indirme
+ * @param {import("./storage/queue.js").QueueItem[]} downloadQueue
+ * @param {import("../sources/index.js").Source} source
+ */
+async function searchAndDownloadAnimecix(downloadQueue, source) {
+    let selectedAnime;
+    let episodes;
+
+    while (true) {
+        console.clear();
+        const { name } = await inquirer.prompt([{
+            type: "input",
+            name: "name",
+            message: "Aramak istediğiniz animenin adını girin (İptal için 'iptal' yazın):",
+            validate: (input) => input?.trim() ? true : "Lütfen geçerli bir anime adı giriniz."
+        }]);
+
+        if (name.toLowerCase() === "iptal") return;
+
+        spinner.start("Aranıyor...");
+
+        let foundAnimes;
+        try {
+            foundAnimes = await source.search(name);
+        } catch (error) {
+            spinner.fail(chalk.red("Arama yapılamadı."));
+            await new Promise(r => setTimeout(r, 1500));
+            continue;
+        }
+
+        if (foundAnimes.length === 0) {
+            spinner.fail(chalk.gray("Sonuç bulunamadı."));
+            await new Promise(r => setTimeout(r, 1500));
+            continue;
+        }
+
+        spinner.stop();
+
+        const { anime } = await inquirer.prompt([{
+            type: "list",
+            name: "anime",
+            message: "Hangi animeyi seçmek istersiniz?",
+            pageSize: 15,
+            choices: [
+                { name: "Geri Dön", value: "back" },
+                new inquirer.Separator(),
+                ...foundAnimes.map(a => ({
+                    name: `${a.name} ${a.type ? chalk.gray(`(${a.type})`) : ""}`,
+                    value: a
+                }))
+            ]
+        }]);
+
+        if (anime === "back") continue;
+        selectedAnime = anime;
+
+        spinner.start("Bölümler yükleniyor...");
+
+        try {
+            episodes = await source.getEpisodes(selectedAnime.id);
+        } catch (error) {
+            spinner.fail(chalk.red("Bölümler alınamadı."));
+            await new Promise(r => setTimeout(r, 1500));
+            continue;
+        }
+
+        if (!episodes || episodes.length === 0) {
+            spinner.fail(chalk.gray("Bu anime için bölüm bulunamadı."));
+            await new Promise(r => setTimeout(r, 1500));
+            continue;
+        }
+
+        spinner.stop();
+        break;
+    }
+
+    console.clear();
+    console.log(chalk.green(`\n${selectedAnime.name} seçildi!`));
+    console.log(chalk.gray(`Toplam ${episodes.length} bölüm mevcut.`));
+
+    while (true) {
+        const { action } = await inquirer.prompt([{
+            type: "list",
+            name: "action",
+            message: "Bir işlem seçin:",
+            choices: [
+                { name: "Bölümü İzle", value: "watch" },
+                { name: "Geri Dön", value: "back" }
+            ]
+        }]);
+
+        if (action === "back") return;
+
+        if (action === "watch") {
+            while (true) {
+                console.clear();
+                console.log(chalk.green(`\n${selectedAnime.name} - İzle`));
+
+                const { episode } = await inquirer.prompt([{
+                    type: "list",
+                    name: "episode",
+                    message: "İzlemek istediğiniz bölümü seçin:",
+                    pageSize: 15,
+                    loop: false,
+                    choices: [
+                        { name: "Geri Dön", value: "back" },
+                        new inquirer.Separator(),
+                        ...episodes.map(ep => ({
+                            name: ep.name || `${ep.episode_number}. Bölüm`,
+                            value: ep
+                        }))
+                    ]
+                }]);
+
+                if (episode === "back") break;
+
+                spinner.start("İzleme linki alınıyor...");
+
+                let streamLinks;
+                try {
+                    streamLinks = await source.getStreamLinks({ ...episode, _animeId: selectedAnime.id, _isMovie: selectedAnime._isMovie });
+                } catch (error) {
+                    spinner.fail(chalk.red("İzleme linki alınamadı."));
+                    await new Promise(r => setTimeout(r, 1500));
+                    continue;
+                }
+
+                if (!streamLinks || streamLinks.length === 0) {
+                    spinner.fail(chalk.red("İzleme kaynağı bulunamadı."));
+                    await new Promise(r => setTimeout(r, 1500));
+                    continue;
+                }
+
+                spinner.stop();
+
+                // Kalite seçimi
+                let selectedLink = streamLinks[0].url;
+                if (streamLinks.length > 1) {
+                    const { quality } = await inquirer.prompt([{
+                        type: "list",
+                        name: "quality",
+                        message: "Kalite seçin:",
+                        choices: streamLinks.map(s => ({
+                            name: s.quality || s.label || "Varsayılan",
+                            value: s.url
+                        }))
+                    }]);
+                    selectedLink = quality;
+                }
+
+                try {
+                    const config = getConfig();
+                    const player = config.defaultPlayer || "vlc";
+
+                    console.clear();
+                    console.log(chalk.green(`${selectedAnime.name} — ${episode.name || episode.episode_number + ". Bölüm"} ${player} ile açılıyor...`));
+
+                    setWatchingActivity({
+                        animeName: selectedAnime.name,
+                        animeImage: selectedAnime.poster || "",
+                        episode: episode.episode_number,
+                        totalEpisodes: episodes.length
+                    });
+
+                    if (player === "mpv") {
+                        await openInMpv(selectedLink);
+                    } else {
+                        await openInVlc(selectedLink);
+                    }
+
+                    setActivity("Ana menüde geziniyor");
+                    await new Promise(r => setTimeout(r, 1000));
+                } catch (error) {
+                    console.error(chalk.red(`Oynatıcı hatası: ${error.message}`));
+                    await new Promise(r => setTimeout(r, 2000));
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Animely kaynağı için arama ve indirme (mevcut mantık)
  * @param {import("../jsdoc.js").Anime[]} animes 
  * @param {import("./storage/queue.js").QueueItem[]} downloadQueue
  */
-export async function searchAndDownload(animes, downloadQueue) {
+async function searchAndDownloadAnimely(animes, downloadQueue) {
     let selectedAnime;
     let episodes;
 

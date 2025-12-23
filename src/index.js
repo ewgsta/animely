@@ -6,8 +6,8 @@ import { loadQueue, saveQueue } from "./utils/storage/queue.js";
 import { initDiscordRpc, setActivity } from "./utils/discord.js";
 import { timeFormat } from "./functions/time.js";
 import { API_URL } from "./constants.js";
-import { getAnimeList } from "./utils/data_manager.js";
 import { telemetry } from "./telemetry/index.js";
+import { sources, getSourceById } from "./sources/index.js";
 
 import { showSettings } from "./utils/ui/settings_ui.js";
 import { showHistory } from "./utils/ui/show_history.js";
@@ -61,21 +61,28 @@ if (notifier.update) {
 
 		spinner.start();
 
-		let animes;
-		try {
-			const [animesResult] = await Promise.all([
-				getAnimeList(),
-				speedTestPromise
-			]);
-			animes = animesResult;
-		} catch (error) {
-			spinner.fail(chalk.red("Anime listesi alınamadı. İnternet bağlantınızı kontrol edin."));
-			return;
+		const config = getConfig();
+		const currentSource = getSourceById(config.defaultSource) || sources[0];
+
+		// Animely kaynağı için anime listesini önceden yükle
+		let animes = null;
+		if (currentSource.supportsLocalSearch && currentSource.getAnimeList) {
+			try {
+				const [animesResult] = await Promise.all([
+					currentSource.getAnimeList(),
+					speedTestPromise
+				]);
+				animes = animesResult;
+			} catch (error) {
+				spinner.fail(chalk.red("Anime listesi alınamadı. İnternet bağlantınızı kontrol edin."));
+				return;
+			}
+		} else {
+			await speedTestPromise;
 		}
 		spinner.stop();
 
 		const downloadQueue = loadQueue();
-		const config = getConfig();
 
 		if (!config.defaultPlayer) {
 			console.clear();
@@ -141,8 +148,11 @@ if (notifier.update) {
 			console.clear();
 			setActivity("Menüde geziniyor");
 
+			const currentConfig = getConfig();
+			const activeSource = getSourceById(currentConfig.defaultSource) || sources[0];
+
 			console.log([
-				`${chalk.gray(timeFormat())} Animely CLI`,
+				`${chalk.gray(timeFormat())} Animely CLI ${chalk.dim(`[${activeSource.name}]`)}`,
 				`${chalk.gray(timeFormat())} GitHub: ${chalk.blue.underline("https://github.com/ewgsta/animely")}`,
 			].join("\n"));
 
@@ -157,7 +167,8 @@ if (notifier.update) {
 			let resumeAnime = null;
 			let nextEpisode = null;
 
-			if (lastWatched && !lastWatched.completed && animes) {
+			// Sadece Animely kaynağında devam et özelliği
+			if (lastWatched && !lastWatched.completed && animes && activeSource.id === "animely") {
 				const found = animes.find(a => a.NAME === lastWatched.name);
 				if (found) {
 					resumeAnime = found;
@@ -206,15 +217,20 @@ if (notifier.update) {
 			} else if (action === "history") {
 				await showHistory();
 			} else if (action === "search") {
-				try {
+				// Kaynak değişmiş olabilir, güncel kaynağı al
+				const searchConfig = getConfig();
+				const searchSource = getSourceById(searchConfig.defaultSource) || sources[0];
 
-					spinner.start("Liste güncelleniyor...");
-					animes = await getAnimeList();
-					spinner.stop();
-				} catch (error) {
-					spinner.stop();
+				if (searchSource.supportsLocalSearch && searchSource.getAnimeList) {
+					try {
+						spinner.start("Liste güncelleniyor...");
+						animes = await searchSource.getAnimeList();
+						spinner.stop();
+					} catch (error) {
+						spinner.stop();
+					}
 				}
-				await searchAndDownload(animes, downloadQueue);
+				await searchAndDownload(animes, downloadQueue, searchSource);
 			} else if (action === "start_queue") {
 				await processQueue(downloadQueue);
 			} else if (action === "clear_queue") {

@@ -6,9 +6,11 @@ import { authenticate, verifyToken } from "../anilist.js";
 import { spinner } from "../spinner.js";
 import { AUTH_URL } from "../../constants.js";
 import { commandExists, installPackage } from "../system.js";
+import { sources } from "../../sources/index.js";
 
 export async function showSettings() {
     const config = getConfig();
+    const currentSource = sources.find(s => s.id === config.defaultSource) || sources[0];
 
     console.clear();
 
@@ -18,6 +20,7 @@ export async function showSettings() {
         message: "Ayarlar Menüsü:",
         pageSize: 15,
         choices: [
+            { name: `Anime Kaynağı (Mevcut: ${chalk.yellow(currentSource.name)})`, value: "defaultSource" },
             { name: `Varsayılan Oynatıcı (Mevcut: ${chalk.yellow(config.defaultPlayer || "Seçilmedi")})`, value: "defaultPlayer" },
             { name: `İndirme Yöneticisi (Aria2) (Mevcut: ${chalk.yellow(config.useAria2 ? "Aktif" : "Pasif")})`, value: "aria2" },
             ...(config.useAria2 ? [{ name: `   ↳ Aria2 Bağlantı Sayısı (Mevcut: ${chalk.yellow(config.aria2Connections)}x)`, value: "aria2Connections" }] : []),
@@ -35,6 +38,26 @@ export async function showSettings() {
     }]);
 
     if (action === "back") return;
+
+    if (action === "defaultSource") {
+        const { source } = await inquirer.prompt([{
+            type: "list",
+            name: "source",
+            message: "Anime kaynağını seçin:",
+            choices: sources.map(s => ({
+                name: `${s.name}${s.supportsLocalSearch ? chalk.gray(" (Gelişmiş arama)") : ""}`,
+                value: s.id
+            })),
+            default: config.defaultSource || "animely"
+        }]);
+
+        config.defaultSource = source;
+        saveConfig(config);
+        console.log(chalk.green("\nAnime kaynağı güncellendi."));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await showSettings();
+        return;
+    }
 
     if (action === "detailsToggle") {
         config.showAnimeDetails = config.showAnimeDetails === false ? true : false;

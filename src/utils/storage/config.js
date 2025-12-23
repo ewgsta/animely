@@ -15,6 +15,7 @@ const defaultConfig = {
 	maxConcurrent: 3,
 	downloadDir: path.join(process.cwd(), "animely-downloads"),
 	defaultPlayer: "", // "vlc" | "mpv"
+	defaultSource: "animely", // "animely" | "animecix"
 	retryCount: 3,
 	retryDelay: 3000,
 	useAria2: false,
@@ -30,6 +31,7 @@ const defaultConfig = {
  * @property {number} maxConcurrent
  * @property {string} downloadDir
  * @property {string} defaultPlayer
+ * @property {string} defaultSource
  * @property {number} retryCount
  * @property {number} retryDelay
  * @property {boolean} useAria2
