@@ -3,26 +3,26 @@ import chalk from "chalk";
 import axios from "axios";
 import fs from "fs";
 import path from "path";
-import { getConfig } from "./config.js";
-import { saveQueue } from "./queue.js";
+import { getConfig } from "./storage/config.js";
+import { saveQueue } from "./storage/queue.js";
 import { searchAnimes } from "./search.js";
 import { formatName, getLink } from "../functions/episodes.js";
-import { openInVlc } from "./vlc.js";
-import { openInMpv } from "./mpv.js";
+import { openInVlc } from "./players/vlc.js";
+import { openInMpv } from "./players/mpv.js";
 import { setActivity } from "./discord.js";
-import { updateHistory, loadHistory } from "./history.js";
+import { updateHistory, loadHistory } from "./storage/history.js";
 import { searchAnime, updateAnilistProgress } from "./anilist.js";
 import { spinner } from "./spinner.js";
-import { dl } from "./download.js";
-import { batch } from "./concurrency.js";
-import { ProgressBar } from "./progress.js";
+import { dl } from "./download/download.js";
+import { batch } from "./download/concurrency.js";
+import { ProgressBar } from "./download/progress.js";
 import { API_URL } from "../constants.js";
 import { telemetry } from "../telemetry/index.js";
 import { commandExists } from "./system.js";
 
 /**
  * @param {import("../jsdoc.js").Anime[]} animes 
- * @param {import("../utils/queue.js").QueueItem[]} downloadQueue
+ * @param {import("./storage/queue.js").QueueItem[]} downloadQueue
  */
 export async function searchAndDownload(animes, downloadQueue) {
     let selectedAnime;

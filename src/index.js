@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 import { line } from "./functions/variables.js";
 import { spinner } from "./utils/spinner.js";
-import { getConfig, saveConfig } from "./utils/config.js";
-import { loadQueue, saveQueue } from "./utils/queue.js";
+import { getConfig, saveConfig } from "./utils/storage/config.js";
+import { loadQueue, saveQueue } from "./utils/storage/queue.js";
 import { initDiscordRpc, setActivity } from "./utils/discord.js";
 import { timeFormat } from "./functions/time.js";
 import { API_URL } from "./constants.js";
 import { getAnimeList } from "./utils/data_manager.js";
 import { telemetry } from "./telemetry/index.js";
 
-import { showSettings } from "./utils/settings_ui.js";
-import { showHistory } from "./utils/show_history.js";
+import { showSettings } from "./utils/ui/settings_ui.js";
+import { showHistory } from "./utils/ui/show_history.js";
 import { processQueue } from "./utils/process_queue.js";
 import { searchAndDownload } from "./utils/search_download.js";
 import { resumeWatch } from "./utils/resume_watch.js";
-import { loadHistory } from "./utils/history.js";
+import { loadHistory } from "./utils/storage/history.js";
 
 import { execSync, spawnSync } from "child_process";
 import chalk from "chalk";

@@ -3,7 +3,7 @@ import axios from "axios";
 import chalk from "chalk";
 import http from "http";
 import { exec } from "child_process";
-import { getConfig } from "./config.js";
+import { getConfig } from "./storage/config.js";
 import { ANILIST_ID, AUTH_URL } from "../constants.js";
 
 const ANILIST_API = "https://graphql.anilist.co";

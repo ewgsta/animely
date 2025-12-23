@@ -14,7 +14,7 @@ if (!fs.existsSync(configDir)) {
 /**
  * @typedef {Object} QueueItem
  * @property {string} animeName
- * @property {import("../jsdoc.js").DownloadEpisode} episode
+ * @property {import("../../jsdoc.js").DownloadEpisode} episode
  * @property {string} dirPath
  * @property {string} safeAnimeName
  */
@@ -41,4 +41,3 @@ export function loadQueue() {
 export function saveQueue(queue) {
 	fs.writeFileSync(queuePath, JSON.stringify(queue, null, 2), "utf-8");
 }
-

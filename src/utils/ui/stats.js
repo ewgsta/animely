@@ -1,7 +1,7 @@
 // @ts-check
 import chalk from "chalk";
 import inquirer from "inquirer";
-import { loadHistory } from "./history.js";
+import { loadHistory } from "../storage/history.js";
 
 export async function stats() {
     console.clear();

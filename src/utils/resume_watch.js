@@ -1,12 +1,12 @@
 import inquirer from "inquirer";
 import chalk from "chalk";
 import axios from "axios";
-import { getConfig } from "./config.js";
+import { getConfig } from "./storage/config.js";
 import { formatName, getLink } from "../functions/episodes.js";
-import { openInVlc } from "./vlc.js";
-import { openInMpv } from "./mpv.js";
+import { openInVlc } from "./players/vlc.js";
+import { openInMpv } from "./players/mpv.js";
 import { setActivity } from "./discord.js";
-import { updateHistory, loadHistory } from "./history.js";
+import { updateHistory, loadHistory } from "./storage/history.js";
 import { searchAnime, updateAnilistProgress } from "./anilist.js";
 import { spinner } from "./spinner.js";
 import { API_URL } from "../constants.js";

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { API_URL } from "../constants.js";
-import { getCachedAnimeList, saveAnimeListToCache } from "./cache.js";
+import { getCachedAnimeList, saveAnimeListToCache } from "./storage/cache.js";
 
 /**
  * @param {boolean} forceUpdate 

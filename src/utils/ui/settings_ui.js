@@ -1,11 +1,11 @@
 import inquirer from "inquirer";
 import chalk from "chalk";
-import { getConfig, saveConfig } from "./config.js";
-import { line } from "../functions/variables.js";
-import { authenticate, verifyToken } from "./anilist.js";
-import { spinner } from "./spinner.js";
-import { AUTH_URL } from "../constants.js";
-import { commandExists, installPackage } from "./system.js";
+import { getConfig, saveConfig } from "../storage/config.js";
+import { line } from "../../functions/variables.js";
+import { authenticate, verifyToken } from "../anilist.js";
+import { spinner } from "../spinner.js";
+import { AUTH_URL } from "../../constants.js";
+import { commandExists, installPackage } from "../system.js";
 
 export async function showSettings() {
     const config = getConfig();
@@ -105,6 +105,7 @@ export async function showSettings() {
         return;
     }
 
+
     if (action === "defaultPlayer") {
         const { player } = await inquirer.prompt([{
             type: "list",
@@ -160,6 +161,7 @@ export async function showSettings() {
         await showSettings();
         return;
     }
+
 
     if (action === "downloadDir") {
         const { dir } = await inquirer.prompt([{

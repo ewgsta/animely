@@ -8,7 +8,7 @@ import { pipeline } from "stream/promises";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegPath from "ffmpeg-static";
 import { spawn } from "child_process";
-import { getConfig } from "./config.js";
+import { getConfig } from "../storage/config.js";
 
 // @ts-ignore
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -43,7 +43,7 @@ export async function download(url, outputPath, options = { silent: false }) {
 	 */
 	async function downloadWithAria2(url, outputPath, options = { silent: false }) {
 		const __dirname = outputPath.substring(0, outputPath.lastIndexOf("\\"));
-		const filename = outputPath.substring(outputPath.lastIndexOf("\\") + 1) + ".mp4"; // Varsayilan olarak mp4 ekliyoruz, aria2 otomatik belirlemiyor bu modda
+		const filename = outputPath.substring(outputPath.lastIndexOf("\\") + 1) + ".mp4";
 
 		const config = getConfig();
 		const connections = String(config.aria2Connections || 16);
@@ -71,32 +71,21 @@ export async function download(url, outputPath, options = { silent: false }) {
 
 			aria2.stdout.on("data", (data) => {
 				const output = data.toString();
-
 				const percentMatch = output.match(/\((\d+)%\)/);
 				const speedMatch = output.match(/DL:([\w.]+(?:Ki|Mi|Gi)?B)/);
-				const etaMatch = output.match(/ETA:([\w:]+)/);
-				const totalMatch = output.match(/\/([\d.]+[KMG]iB)/);
 
 				if (percentMatch) {
 					const percent = percentMatch[1];
 					const speedRaw = speedMatch ? speedMatch[1] : "0B";
-					const eta = 0;
 
 					if (options.onProgress) {
-						options.onProgress({
-							percent: percent,
-							downloaded: 0,
-							total: 0,
-							speed: 0,
-							eta: 0
-						});
+						options.onProgress({ percent: percent, downloaded: 0, total: 0, speed: 0, eta: 0 });
 					}
 
 					if (!options.silent) {
 						const barLength = 30;
 						const filledLength = Math.floor((parseInt(percent) / 100) * barLength);
 						const progressBar = "█".repeat(filledLength) + "░".repeat(barLength - filledLength);
-
 						const out = `[${progressBar}] ${percent}% - Hız: ${speedRaw}`;
 						process.stdout.clearLine(0);
 						process.stdout.cursorTo(0);
@@ -122,6 +111,7 @@ export async function download(url, outputPath, options = { silent: false }) {
 			});
 		});
 	}
+
 
 	let totalLength = 0;
 	let extension = "";
@@ -152,7 +142,6 @@ export async function download(url, outputPath, options = { silent: false }) {
 			}
 		}
 	} catch (error) {
-
 	}
 
 	let response;
@@ -181,6 +170,7 @@ export async function download(url, outputPath, options = { silent: false }) {
 	if (response.status !== 200 && response.status !== 206) {
 		throw new Error(`Sunucu hatası: ${response.status} ${response.statusText}`);
 	}
+
 
 	const isResuming = response.status === 206;
 	if (startByte > 0 && !isResuming) {
@@ -237,6 +227,7 @@ export async function download(url, outputPath, options = { silent: false }) {
 		}
 	}
 
+
 	response.data.on("data", (/** @type {any[]} */ chunk) => {
 		downloaded += chunk.length;
 
@@ -269,7 +260,6 @@ export async function download(url, outputPath, options = { silent: false }) {
 					const etaStr = h > 0 ? `${h}s ${m}dk ${s}sn` : m > 0 ? `${m}dk ${s}sn` : `${s}sn`;
 
 					const output = `[${progressBar}] ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)}) - ${bytes(speed)}/s - Kalan: ${etaStr}`;
-
 					process.stdout.write(`\x1b[2K\x1b[0G${chalk.gray(output)}`);
 				}
 			} else {
@@ -301,6 +291,7 @@ export async function download(url, outputPath, options = { silent: false }) {
 	}
 }
 
+
 /**
  * M3U8 
  * @param {string} url 
@@ -320,9 +311,6 @@ async function downloadM3U8(url, outputPath, options = { silent: false }) {
 
 	return new Promise((resolve, reject) => {
 		ffmpeg(url)
-			.on('start', () => {
-				// bildirim yok
-			})
 			.on('error', (err) => {
 				reject(new Error(`FFmpeg hatası: ${err.message}`));
 			})
@@ -331,13 +319,7 @@ async function downloadM3U8(url, outputPath, options = { silent: false }) {
 				const downloadedBytes = (progress.targetSize || 0) * 1024;
 
 				if (options.onProgress) {
-					options.onProgress({
-						percent,
-						downloaded: downloadedBytes,
-						total: 0,
-						speed: 0,
-						eta: 0
-					});
+					options.onProgress({ percent, downloaded: downloadedBytes, total: 0, speed: 0, eta: 0 });
 				}
 
 				if (!options.silent) {

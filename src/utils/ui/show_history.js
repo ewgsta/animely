@@ -1,8 +1,7 @@
 import inquirer from "inquirer";
 import chalk from "chalk";
-import { loadHistory } from "./history.js";
-import { line } from "../functions/variables.js";
-
+import { loadHistory } from "../storage/history.js";
+import { line } from "../../functions/variables.js";
 import { stats } from "./stats.js";
 
 export async function showHistory() {

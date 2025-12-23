@@ -2,17 +2,17 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import fs from "fs";
 import path from "path";
-import { getConfig } from "./config.js";
-import { saveQueue } from "./queue.js";
-import { batch } from "./concurrency.js";
-import { dl } from "./download.js";
+import { getConfig } from "./storage/config.js";
+import { saveQueue } from "./storage/queue.js";
+import { batch } from "./download/concurrency.js";
+import { dl } from "./download/download.js";
 import { spinner } from "./spinner.js";
-import { ProgressBar } from "./progress.js";
+import { ProgressBar } from "./download/progress.js";
 import { EstSpeed, EP_SIZE } from "../constants.js";
 import notifier from "node-notifier";
 
 /**
- * @param {import("./queue.js").QueueItem[]} queue
+ * @param {import("./storage/queue.js").QueueItem[]} queue
  */
 export async function processQueue(queue) {
     console.clear();
