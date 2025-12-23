@@ -7,6 +7,7 @@ import { openInVlc } from "./players/vlc.js";
 import { openInMpv } from "./players/mpv.js";
 import { setActivity, setWatchingActivity } from "./discord.js";
 import { updateHistory, loadHistory } from "./storage/history.js";
+import { getWatchPosition, updateWatchPosition, clearWatchPosition } from "./storage/watch_progress.js";
 import { searchAnime, updateAnilistProgress } from "./anilist.js";
 import { spinner } from "./spinner.js";
 import { API_URL } from "../constants.js";
@@ -50,6 +51,27 @@ export async function resumeWatch(anime, nextEpisodeNumber) {
     const config = getConfig();
     const player = config.defaultPlayer || "vlc";
 
+    // Kaydedilmiş pozisyon kontrolü
+    const savedProgress = getWatchPosition(anime.NAME, nextEpisodeNumber);
+    let startPosition = 0;
+
+    if (savedProgress && savedProgress.position > 10) {
+        const minutes = Math.floor(savedProgress.position / 60);
+        const seconds = savedProgress.position % 60;
+        const { resumeFromSaved } = await inquirer.prompt([{
+            type: "confirm",
+            name: "resumeFromSaved",
+            message: `Kaldığınız yerden devam etmek ister misiniz? (${minutes}:${seconds.toString().padStart(2, '0')})`,
+            default: true
+        }]);
+
+        if (resumeFromSaved) {
+            startPosition = savedProgress.position;
+        } else {
+            clearWatchPosition(anime.NAME, nextEpisodeNumber);
+        }
+    }
+
     console.log(chalk.green(`\n${anime.NAME} — ${nextEpisodeNumber}. bölüm açılıyor (${player})...`));
     setWatchingActivity({
         animeName: anime.NAME,
@@ -58,11 +80,17 @@ export async function resumeWatch(anime, nextEpisodeNumber) {
         totalEpisodes: episodes.length
     });
 
+    const onPlayerClose = (position, duration) => {
+        if (position > 10 && duration > 0) {
+            updateWatchPosition(anime.NAME, nextEpisodeNumber, position, duration);
+        }
+    };
+
     try {
         if (player === "mpv") {
-            await openInMpv(link);
+            await openInMpv(link, { startPosition, onClose: onPlayerClose });
         } else {
-            await openInVlc(link);
+            await openInVlc(link, { startPosition, onClose: onPlayerClose });
         }
 
         setActivity("Ana menüde geziniyor");

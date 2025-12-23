@@ -11,6 +11,7 @@ import { openInVlc } from "./players/vlc.js";
 import { openInMpv } from "./players/mpv.js";
 import { setActivity, setWatchingActivity } from "./discord.js";
 import { updateHistory, loadHistory } from "./storage/history.js";
+import { getWatchPosition, updateWatchPosition, clearWatchPosition } from "./storage/watch_progress.js";
 import { searchAnime, updateAnilistProgress } from "./anilist.js";
 import { spinner } from "./spinner.js";
 import { dl } from "./download/download.js";
@@ -210,6 +211,28 @@ export async function searchAndDownload(animes, downloadQueue) {
                     const player = config.defaultPlayer || "vlc";
 
                     console.clear();
+
+                    // Kaydedilmiş pozisyon kontrolü
+                    const savedProgress = getWatchPosition(selectedAnime.NAME, episode.episode_number);
+                    let startPosition = 0;
+
+                    if (savedProgress && savedProgress.position > 10) {
+                        const minutes = Math.floor(savedProgress.position / 60);
+                        const seconds = savedProgress.position % 60;
+                        const { resumeFromSaved } = await inquirer.prompt([{
+                            type: "confirm",
+                            name: "resumeFromSaved",
+                            message: `Kaldığınız yerden devam etmek ister misiniz? (${minutes}:${seconds.toString().padStart(2, '0')})`,
+                            default: true
+                        }]);
+
+                        if (resumeFromSaved) {
+                            startPosition = savedProgress.position;
+                        } else {
+                            clearWatchPosition(selectedAnime.NAME, episode.episode_number);
+                        }
+                    }
+
                     console.log(chalk.green(`${selectedAnime.NAME} — ${episode.episode_number}. Bölüm ${player} ile açılıyor...`));
 
                     setWatchingActivity({
@@ -219,10 +242,16 @@ export async function searchAndDownload(animes, downloadQueue) {
                         totalEpisodes: episodes.length
                     });
 
+                    const onPlayerClose = (position, duration) => {
+                        if (position > 10 && duration > 0) {
+                            updateWatchPosition(selectedAnime.NAME, episode.episode_number, position, duration);
+                        }
+                    };
+
                     if (player === "mpv") {
-                        await openInMpv(episode.link);
+                        await openInMpv(episode.link, { startPosition, onClose: onPlayerClose });
                     } else {
-                        await openInVlc(episode.link);
+                        await openInVlc(episode.link, { startPosition, onClose: onPlayerClose });
                     }
 
                     setActivity("Ana menüde geziniyor");
