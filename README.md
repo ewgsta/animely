@@ -1,13 +1,16 @@
 <div align="center">
-  <img src="https://r2.fakecrime.bio/uploads/fbb7b3a0-7735-4253-af71-fd2e0a9c5110.png" alt="Animely Logo" style="border-radius: 15px; width: 200px; height: auto;">
+  <img src="https://raw.githubusercontent.com/ewgsta/animely/main/docs/img/phee.png" alt="Animely Logo" style="border-radius: 35px; width: 200px; height: auto;">
 </div>
 
 **Animely, terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI aracıdır.**
 
 ## Özellikler
 
+*   **Çoklu Kaynak Desteği:** Animely.net ve Animecix.tv kaynaklarından anime izleyebilirsiniz.
 *   **Anında İzleme:** İndirmeyi beklemeden, doğrudan **VLC Media Player** veya **MPV Player** üzerinden yayın akışı (streaming) yapın.
-*   **Anilist Entegrasyonu:** İzlediğiniz animeleri anilist hesabınıza otomatik olarak ekleyin!
+*   **Kaldığı Yerden Devam:** MPV Player ile izlerken kaldığınız dakikayı otomatik hatırlar ve devam etmenizi önerir.
+*   **Kalite Seçimi:** Animecix kaynağında 480p, 720p ve 1080p kalite seçenekleri.
+*   **Anilist Entegrasyonu:** İzlediğiniz animeleri Anilist hesabınıza otomatik olarak ekleyin!
 *   **Discord Rich Presence (RPC):** Anime izlerken veya menüde gezerken Discord profilinizde ne yaptığınız otomatik olarak gözükür.
 *   **Akıllı İndirme Yöneticisi:**
     *   **Kaldığı Yerden Devam Etme:** İnternetiniz kesilse veya program kapansa bile indirmeler kaldığı yerden devam eder.
@@ -15,9 +18,16 @@
     *   **Detaylı İstatistikler:** İndirme sırasında anlık hız, indirilen boyut, toplam boyut ve kalan süre (ETA) bilgilerini görün.
 *   **Esnek Seçim:** İster tek bir bölümü, ister bir aralığı (örn: 1-12), isterseniz de tüm sezonu tek seferde indirin.
 *   **Otomatik Güncelleme:** Yeni bir sürüm çıktığında sizi uyarır ve otomatik olarak günceller.
-*   **Gelişmiş Arama:** Anime ismini yazın, en iyi eşleşmeleri anında bulun.
+*   **Gelişmiş Arama:** Animely kaynağında fuzzy search ile anime ismini yazın, en iyi eşleşmeleri anında bulun.
 *   **Hızlandırıcı (Aria2):** Desteklenen indirmelerde `aria2c` motorunu kullanarak (16x bağlantı ile) indirmeleri çok daha hızlı yapın.
 *   **Kullanıcı Dostu Arayüz:** Renkli, anlaşılır, Türkçe ve etkileşimli menüler.
+
+## Desteklenen Kaynaklar
+
+| Kaynak | Arama | İzleme | İndirme | Kalite Seçimi |
+|--------|-------|--------|---------|---------------|
+| Animely.net | ✅ Fuzzy Search | ✅ | ✅ | ❌ |
+| Animecix.tv | ✅ API Search | ✅ | ❌ (Yakında eklenecek.) | ✅ 480p/720p/1080p |
 
 ## Kurulum
 
@@ -42,6 +52,7 @@ animely
 ## Ayarlar
 
 Ana menüden "Ayarlar" seçeneğine giderek:
+*   **Anime kaynağını** değiştirebilirsiniz (Animely veya Animecix).
 *   Varsayılan video oynatıcısını değiştirebilirsiniz.
 *   Eşzamanlı indirme sayısını değiştirebilirsiniz.
 *   İndirme klasörünü özelleştirebilirsiniz.
@@ -50,8 +61,8 @@ Ana menüden "Ayarlar" seçeneğine giderek:
 
 ## Gereksinimler
 
-*   **Node.js:** Çalıştırma ortamı (v14+ önerilir).
-*   **Video Oynatıcı:** "İzle" özelliği için **VLC Media Player** veya **MPV Player** gereklidir. Animely, sisteminizde yüklü olanı otomatik algılar veya kurulum için yardımcı olur.
+*   **Node.js:** Çalıştırma ortamı (v18+ önerilir).
+*   **Video Oynatıcı:** "İzle" özelliği için **MPV Player** (önerilen) veya **VLC Media Player** gereklidir. MPV, kaldığı yerden devam özelliğini destekler.
 
 ## Lisans
 
