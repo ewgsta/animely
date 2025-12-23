@@ -9,40 +9,36 @@ export async function stats() {
     const animes = Object.values(history);
 
     if (animes.length === 0) {
-        console.log(chalk.yellow("henuz hicbir sey izlememissin, buralar cok sessiz..."));
-        await inquirer.prompt([{ type: 'input', name: 'devam', message: 'geri don' }]);
+        console.log(chalk.yellow("İzleme geçmişiniz henüz boş..."));
+        await inquirer.prompt([{ type: 'input', name: 'devam', message: 'Geri dönmek için Enter\'a basın' }]);
         return;
     }
 
-    // Hesaplamalar (sayısalım kötü amk)
     const totalAnimes = animes.length;
     const completedAnimes = animes.filter(a => a.completed).length;
     const watchingAnimes = totalAnimes - completedAnimes;
 
-    // Toplam bolum sayisi
     const totalEpisodes = animes.reduce((acc, curr) => acc + (curr.lastEpisode || 0), 0);
 
-    // Sure (bolum basi 24dk diyelim)
     const totalMinutes = totalEpisodes * 24;
     const hours = Math.floor(totalMinutes / 60);
     const days = (hours / 24).toFixed(1);
 
-    // Son izlenen
     const lastWatched = animes.sort((a, b) => new Date(b.lastWatchedAt).getTime() - new Date(a.lastWatchedAt).getTime())[0];
 
-    console.log(`${chalk.cyan("toplam anime:")}    ${chalk.bold(totalAnimes)}`);
-    console.log(`${chalk.cyan("bitenler:")}        ${chalk.green(completedAnimes)}`);
-    console.log(`${chalk.cyan("devam edenler:")}   ${chalk.yellow(watchingAnimes)}`);
+    console.log(`${chalk.cyan("Toplam Anime:")}    ${chalk.bold(totalAnimes)}`);
+    console.log(`${chalk.cyan("Tamamlananlar:")}   ${chalk.green(completedAnimes)}`);
+    console.log(`${chalk.cyan("Devam Edenler:")}   ${chalk.yellow(watchingAnimes)}`);
     console.log("");
-    console.log(`${chalk.cyan("toplam bolum:")}    ${chalk.bold(totalEpisodes)}`);
-    console.log(`${chalk.cyan("harcanan sure:")}   ${chalk.bold(hours)} saat ${chalk.gray(`(yaklasik ${days} gun)`)}`);
+    console.log(`${chalk.cyan("Toplam Bölüm:")}    ${chalk.bold(totalEpisodes)}`);
+    console.log(`${chalk.cyan("İzleme Süresi:")}   ${chalk.bold(hours)} saat ${chalk.gray(`(yaklaşık ${days} gün)`)}`);
     console.log("");
 
     if (lastWatched) {
-        console.log(`${chalk.cyan("en son:")}          ${chalk.magenta(lastWatched.name)} ${chalk.gray(`(${timeAgo(new Date(lastWatched.lastWatchedAt))})`)}`);
+        console.log(`${chalk.cyan("Son İzlenen:")}     ${chalk.magenta(lastWatched.name)} ${chalk.gray(`(${timeAgo(new Date(lastWatched.lastWatchedAt))})`)}`);
     }
 
-    await inquirer.prompt([{ type: 'input', name: 'devam', message: 'geri don' }]);
+    await inquirer.prompt([{ type: 'input', name: 'devam', message: 'Geri dönmek için Enter\'a basın' }]);
 }
 
 /**
@@ -52,19 +48,19 @@ function timeAgo(date) {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
 
     let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + " yil once";
+    if (interval > 1) return Math.floor(interval) + " yıl önce";
 
     interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + " ay once";
+    if (interval > 1) return Math.floor(interval) + " ay önce";
 
     interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + " gun once";
+    if (interval > 1) return Math.floor(interval) + " gün önce";
 
     interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + " saat once";
+    if (interval > 1) return Math.floor(interval) + " saat önce";
 
     interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " dk once";
+    if (interval > 1) return Math.floor(interval) + " dk önce";
 
-    return "az once";
+    return "az önce";
 }

@@ -79,7 +79,6 @@ export function commandExists(program) {
                 }
 
                 if (program === 'aria2') {
-                    // Check possible locations if aria2 is installed manually or via package managers but not in PATH
                     if (require('fs').existsSync('C:\\ProgramData\\chocolatey\\bin\\aria2c.exe')) return true;
                     if (require('fs').existsSync(`${process.env.USERPROFILE}\\scoop\\apps\\aria2\\current\\aria2c.exe`)) return true;
                 }
@@ -104,24 +103,22 @@ export function installPackage(program) {
     const pkg = PACKAGES[program];
 
     if (!pkg) {
-        console.log(chalk.red(`paket tanimi bulunamadi: ${program}`));
+        console.log(chalk.red(`Paket tanımı bulunamadı: ${program}`));
         return false;
     }
 
     try {
         if (osType === "windows") {
-            // Winget
             if (!checkCommand("winget")) {
-                console.log(chalk.red("winget bulunamadi."));
+                console.log(chalk.red("Winget paket yöneticisi bulunamadı."));
                 return false;
             }
             spawnSync("winget", ["install", "-e", "--id", pkg.win], { stdio: "inherit" });
             return true;
 
         } else if (osType === "macos") {
-            // Brew
             if (!checkCommand("brew")) {
-                console.log(chalk.red("homebrew bulunamadi."));
+                console.log(chalk.red("Homebrew paket yöneticisi bulunamadı."));
                 return false;
             }
             const args = ["install", ...pkg.mac.split(" ")];
@@ -129,7 +126,6 @@ export function installPackage(program) {
             return true;
 
         } else if (osType === "linux") {
-            // Apt / Pacman
             if (checkCommand("apt")) {
                 spawnSync("sudo", ["apt", "update"], { stdio: "inherit" });
                 spawnSync("sudo", ["apt", "install", "-y", pkg.linux], { stdio: "inherit" });
@@ -138,12 +134,12 @@ export function installPackage(program) {
                 spawnSync("sudo", ["pacman", "-S", "--noconfirm", pkg.linux], { stdio: "inherit" });
                 return true;
             } else {
-                console.log(chalk.red("paket yoneticisi (apt/pacman) bulunamadi."));
+                console.log(chalk.red("Desteklenen paket yöneticisi (apt/pacman) bulunamadı."));
                 return false;
             }
         }
     } catch (error) {
-        console.error(chalk.red(`kurulum hatasi: ${error.message}`));
+        console.error(chalk.red(`Kurulum hatası: ${error.message}`));
         return false;
     }
     return false;

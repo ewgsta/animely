@@ -19,10 +19,8 @@ export async function initDiscordRpc() {
         });
 
         await client.login({ clientId }).catch((err) => {
-            // discordu arkada acık bırak lan
         });
     } catch (error) {
-        // ha 
     }
 }
 
@@ -45,9 +43,7 @@ export function setActivity(details, state) {
                 { label: "İndir", url: "https://github.com/ewgsta/animely" }
             ]
         }).catch((err) => {
-            // hı hı evet burada da hata olursa
         });
     } catch (error) {
-        // bugunde hata aldık amk
     }
 }

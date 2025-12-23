@@ -105,7 +105,7 @@ export async function updateAnilistProgress(mediaId, progress, completed) {
 		});
 		return true;
 	} catch (error) {
-		console.error(chalk.red("anilist guncelleme hatasi:"), error.response?.data || error.message);
+		console.error(chalk.red("Anilist güncelleme hatası:"), error.response?.data || error.message);
 		return false;
 	}
 }
@@ -124,7 +124,7 @@ export function authenticate() {
 				res.end(`
 					<html>
 						<body style="background: #1a1a1a; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh;">
-							<div id="msg">Giris yapiliyor...</div>
+							<div id="msg">Giriş yapılıyor...</div>
 							<script>
 								const hash = window.location.hash.substring(1);
 								const params = new URLSearchParams(hash);
@@ -135,11 +135,11 @@ export function authenticate() {
 										body: JSON.stringify({ token }),
 										headers: { 'Content-Type': 'application/json' }
 									}).then(() => {
-										document.getElementById('msg').innerText = 'Giris basarili! Bu pencereyi kapatabilirsiniz.';
+										document.getElementById('msg').innerText = 'Giriş başarılı! Bu pencereyi kapatabilirsiniz.';
 										window.close();
 									});
 								} else {
-									document.getElementById('msg').innerText = 'Token bulunamadi. Lutfen tekrar deneyin.';
+									document.getElementById('msg').innerText = 'Token bulunamadı. Lütfen tekrar deneyin.';
 								}
 							</script>
 						</body>
@@ -173,8 +173,8 @@ export function authenticate() {
 
 		server.listen(6677, () => {
 			const authUrl = AUTH_URL;
-			console.log(chalk.cyan("\nTarayici aciliyor... Lutfen AniList hesabinizla giris yapin."));
-			console.log(chalk.gray(`Eger acilmazsa bu linke tiklayin: ${authUrl}`));
+			console.log(chalk.cyan("\nTarayıcı açılıyor... Lütfen AniList hesabınızla giriş yapın."));
+			console.log(chalk.gray(`Eğer açılmazsa bu linke tıklayın: ${authUrl}`));
 
 			const start = (process.platform == 'darwin' ? 'open' : process.platform == 'win32' ? 'start' : 'xdg-open');
 			if (process.platform === 'win32') {

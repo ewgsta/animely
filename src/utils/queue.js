@@ -7,7 +7,6 @@ const homeDir = os.homedir();
 const configDir = path.join(homeDir, ".animely");
 const queuePath = path.join(configDir, "queue.json");
 
-// Ensure config directory exists
 if (!fs.existsSync(configDir)) {
 	fs.mkdirSync(configDir, { recursive: true });
 }

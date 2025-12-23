@@ -1,5 +1,4 @@
 /**
- * Fuzzy search function for anime names
  * @param {string} searchTerm 
  * @param {import("../jsdoc.js").Anime[]} animes 
  * @returns {import("../jsdoc.js").Anime[]}

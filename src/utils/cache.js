@@ -5,7 +5,7 @@ import os from "os";
 const homeDir = os.homedir();
 const configDir = path.join(homeDir, ".animely");
 const cachePath = path.join(configDir, "anime_cache.json");
-const CACHE_DURATION_MS = 30 * 60 * 1000; // 30 dakika
+const CACHE_DURATION_MS = 30 * 60 * 1000;
 
 export function getCachedAnimeList() {
     if (!fs.existsSync(cachePath)) return null;
@@ -16,7 +16,7 @@ export function getCachedAnimeList() {
 
         const now = Date.now();
         if (now - cache.timestamp > CACHE_DURATION_MS) {
-            return null; // Süresi dolmuş
+            return null;
         }
 
         return cache.data;
@@ -38,6 +38,5 @@ export function saveAnimeListToCache(data) {
     try {
         fs.writeFileSync(cachePath, JSON.stringify(cache), "utf-8");
     } catch (e) {
-        // Cache yazılamazsa siktir et 
     }
 }

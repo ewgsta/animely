@@ -33,10 +33,10 @@ export async function searchAndDownload(animes, downloadQueue) {
         const { name } = await inquirer.prompt([{
             type: "input",
             name: "name",
-            message: "hangi animeyi aramak istiyorsunuz (iptal icin 'iptal' yaziniz):",
+            message: "Aramak istediğiniz animenin adını girin (İptal için 'iptal' yazın):",
             validate: (input) => {
                 if (!input || input.trim() === "") {
-                    return "lutfen bir anime adi giriniz.";
+                    return "Lütfen geçerli bir anime adı giriniz.";
                 }
                 return true;
             },
@@ -49,7 +49,7 @@ export async function searchAndDownload(animes, downloadQueue) {
         const foundAnimes = searchAnimes(name, animes);
 
         if (foundAnimes.length === 0) {
-            spinner.fail(chalk.gray("uzgunuz, aradiginiz anime bulunamadi."));
+            spinner.fail(chalk.gray("Üzgünüz, aradığınız kriterlere uygun anime bulunamadı."));
             await new Promise(resolve => setTimeout(resolve, 1500));
             continue;
         }
@@ -64,12 +64,12 @@ export async function searchAndDownload(animes, downloadQueue) {
             const { anime } = await inquirer.prompt([{
                 type: "list",
                 name: "anime",
-                message: "hangi animeyi secmek istiyorsunuz?",
+                message: "Hangi animeyi seçmek istersiniz?",
                 choices: [
-                    { name: "geri don", value: "back" },
+                    { name: "Geri Dön", value: "back" },
                     new inquirer.Separator(),
                     ...foundAnimes.map(anime => ({
-                        name: `${anime.NAME} ${chalk.gray(`(sezon ${anime.SEASON_NUMBER}, ${anime.TOTAL_EPISODES} bolum)`)}`,
+                        name: `${anime.NAME} ${chalk.gray(`(Sezon ${anime.SEASON_NUMBER}, ${anime.TOTAL_EPISODES} Bölüm)`)}`,
                         value: anime,
                     }))
                 ],
@@ -89,8 +89,8 @@ export async function searchAndDownload(animes, downloadQueue) {
         try {
             httpData = await axios.post(`${API_URL}/searchAnime`, { payload: selectedAnime.SLUG });
         } catch (error) {
-            spinner.fail(chalk.red("anime bolumleri alinamadi. lutfen daha sonra tekrar deneyin."));
-            console.error(chalk.gray(`hata detayi: ${error.message}`));
+            spinner.fail(chalk.red("Anime bölümleri alınamadı. Lütfen daha sonra tekrar deneyin."));
+            console.error(chalk.gray(`Hata Detayı: ${error.message}`));
             await new Promise(resolve => setTimeout(resolve, 2000));
             continue;
         }
@@ -98,7 +98,7 @@ export async function searchAndDownload(animes, downloadQueue) {
         episodes = httpData.data.episodes;
 
         if (!episodes || episodes.length === 0) {
-            spinner.fail(chalk.gray("bu anime icin henuz bolum bulunamadi."));
+            spinner.fail(chalk.gray("Bu anime için henüz bölüm bulunamadı."));
             await new Promise(resolve => setTimeout(resolve, 1500));
             continue;
         }
@@ -111,11 +111,10 @@ export async function searchAndDownload(animes, downloadQueue) {
     console.clear();
 
     if (config.showAnimeDetails !== false) {
-        // Detailed View
         console.log(chalk.bold.hex("#38bdf8")(selectedAnime.NAME));
         console.log(chalk.gray("─".repeat(50)));
 
-        console.log(`${chalk.bold("Bolum Sayisi:")} ${selectedAnime.TOTAL_EPISODES}`);
+        console.log(`${chalk.bold("Bölüm Sayısı:")} ${selectedAnime.TOTAL_EPISODES}`);
         console.log(`${chalk.bold("Sezon:")} ${selectedAnime.SEASON_NUMBER}`);
 
         if (selectedAnime.CATEGORIES && selectedAnime.CATEGORIES.length > 0) {
@@ -125,7 +124,7 @@ export async function searchAndDownload(animes, downloadQueue) {
         if (selectedAnime.DESCRIPTION) {
             console.log(chalk.gray("─".repeat(50)));
             console.log(chalk.italic(selectedAnime.DESCRIPTION));
-        } else if (selectedAnime.SYNOPSIS) { // Fallback if property name differs
+        } else if (selectedAnime.SYNOPSIS) {
             console.log(chalk.gray("─".repeat(50)));
             console.log(chalk.italic(selectedAnime.SYNOPSIS));
         }
@@ -133,20 +132,19 @@ export async function searchAndDownload(animes, downloadQueue) {
         console.log(chalk.gray("─".repeat(50)));
         console.log("");
     } else {
-        // Simple View
-        console.log(chalk.green(`\n${selectedAnime.NAME} secildi!`));
-        console.log(chalk.gray(`toplam ${episodes.length} bolum mevcut`));
+        console.log(chalk.green(`\n${selectedAnime.NAME} seçildi!`));
+        console.log(chalk.gray(`Toplam ${episodes.length} bölüm mevcut.`));
     }
 
     while (true) {
         const { action } = await inquirer.prompt([{
             type: "list",
             name: "action",
-            message: "ne yapmak istersin?",
+            message: "Bir işlem seçin:",
             choices: [
-                { name: "izle", value: "watch" },
-                { name: "indir", value: "download" },
-                { name: "geri don", value: "back" }
+                { name: "Bölümü İzle", value: "watch" },
+                { name: "Bölümleri İndir", value: "download" },
+                { name: "Geri Dön", value: "back" }
             ]
         }]);
 
@@ -157,16 +155,16 @@ export async function searchAndDownload(animes, downloadQueue) {
         if (action === "watch") {
             while (true) {
                 console.clear();
-                console.log(chalk.green(`\n${selectedAnime.NAME} - izle`));
+                console.log(chalk.green(`\n${selectedAnime.NAME} - İzle`));
 
                 const { episode } = await inquirer.prompt([{
                     type: "list",
                     name: "episode",
-                    message: "izlemek istediginiz bolumu secin:",
+                    message: "İzlemek istediğiniz bölümü seçin:",
                     pageSize: 15,
                     loop: false,
                     choices: [
-                        { name: "geri don", value: "back" },
+                        { name: "Geri Dön", value: "back" },
                         new inquirer.Separator(),
                         ...episodes.map(({ id, episode_number, type, fansub, backblaze_link, watch_link_1, watch_link_2, watch_link_3 }) => {
                             const links = [backblaze_link, watch_link_1, watch_link_2, watch_link_3];
@@ -202,7 +200,7 @@ export async function searchAndDownload(animes, downloadQueue) {
                 if (episode === "back") break;
 
                 if (!episode.link) {
-                    console.log(chalk.red("secilen bolum icin izleme linki bulunamadi."));
+                    console.log(chalk.red("Seçilen bölüm için izleme kaynağı bulunamadı."));
                     await new Promise(resolve => setTimeout(resolve, 1500));
                     continue;
                 }
@@ -212,7 +210,7 @@ export async function searchAndDownload(animes, downloadQueue) {
                     const player = config.defaultPlayer || "vlc";
 
                     console.clear();
-                    console.log(chalk.green(`${selectedAnime.NAME} — ${episode.episode_number}. bolum ${player}'de aciliyor...`));
+                    console.log(chalk.green(`${selectedAnime.NAME} — ${episode.episode_number}. Bölüm ${player} ile açılıyor...`));
 
                     setActivity(`${selectedAnime.NAME}`, `${episode.episode_number}. Bölüm İzleniyor`);
 
@@ -222,12 +220,12 @@ export async function searchAndDownload(animes, downloadQueue) {
                         await openInVlc(episode.link);
                     }
 
-                    setActivity("Ana menüde takılıyor");
+                    setActivity("Ana menüde geziniyor");
 
                     const { watched } = await inquirer.prompt([{
                         type: "confirm",
                         name: "watched",
-                        message: "bolumu izlendi olarak isaretlemek ister misiniz?",
+                        message: "Bölümü 'İzlendi' olarak işaretlemek ister misiniz?",
                         default: true
                     }]);
 
@@ -242,20 +240,20 @@ export async function searchAndDownload(animes, downloadQueue) {
                         }
 
                         if (config.anilistToken && !anilistId) {
-                            spinner.start("anilist'te anime araniyor...");
+                            spinner.start("Anilist veritabanında aranıyor...");
                             anilistId = await searchAnime(selectedAnime.NAME);
                             spinner.stop();
                         }
 
                         updateHistory(selectedAnime.NAME, epNum, totalEpisodes, anilistId);
-                        console.log(chalk.green("gecmis guncellendi!"));
+                        console.log(chalk.green("İzleme geçmişi güncellendi!"));
 
                         if (config.anilistToken && anilistId) {
-                            spinner.start("anilist guncelleniyor...");
+                            spinner.start("Anilist güncelleniyor...");
                             const success = await updateAnilistProgress(anilistId, epNum, epNum >= totalEpisodes);
                             spinner.stop();
                             if (success) {
-                                console.log(chalk.green("anilist basariyla guncellendi!"));
+                                console.log(chalk.green("Anilist başarıyla güncellendi!"));
                             }
                         }
 
@@ -269,24 +267,24 @@ export async function searchAndDownload(animes, downloadQueue) {
                     }
                 } catch (error) {
                     const config = getConfig();
-                    console.error(chalk.red(`${config.defaultPlayer || "vlc"} baslatilamadi: ${error.message}`));
+                    console.error(chalk.red(`${config.defaultPlayer || "vlc"} başlatılamadı: ${error.message}`));
                     await new Promise(resolve => setTimeout(resolve, 2000));
                 }
             }
         } else if (action === "download") {
             setActivity(`${selectedAnime.NAME}`, "Bölüm İndiriyor");
             console.clear();
-            console.log(chalk.green(`\n${selectedAnime.NAME} - indir`));
+            console.log(chalk.green(`\n${selectedAnime.NAME} - İndir`));
 
             const { selectionMethod } = await inquirer.prompt([{
                 type: "list",
                 name: "selectionMethod",
-                message: "bolumleri nasil secmek istersiniz?",
+                message: "Bölümleri nasıl seçmek istersiniz?",
                 choices: [
-                    { name: "listeden sec (tek tek)", value: "list" },
-                    { name: "aralik gir (orn: 1-12, 15)", value: "range" },
-                    { name: "tumunu indir", value: "all" },
-                    { name: "geri don", value: "back" }
+                    { name: "Listeden seç (Tek tek)", value: "list" },
+                    { name: "Aralık gir (Örn: 1-12, 15)", value: "range" },
+                    { name: "Tümünü indir", value: "all" },
+                    { name: "Geri Dön", value: "back" }
                 ]
             }]);
 
@@ -294,12 +292,12 @@ export async function searchAndDownload(animes, downloadQueue) {
 
             if (selectionMethod === "list") {
                 console.clear();
-                console.log(chalk.green(`\n${selectedAnime.NAME} - bolum secimi`));
+                console.log(chalk.green(`\n${selectedAnime.NAME} - Bölüm Seçimi`));
 
                 const { episodes: selected } = await inquirer.prompt([{
                     type: "checkbox",
                     name: "episodes",
-                    message: "lutfen indirmek istediginiz bolumleri secin (bosluk ile secip enter ile onaylayin):",
+                    message: "İndirmek istediğiniz bölümleri seçin (Boşluk ile seçip Enter ile onaylayın):",
                     choices: episodes.map(({ id, episode_number, type, fansub, backblaze_link, watch_link_1, watch_link_2, watch_link_3 }) => {
                         const links = [backblaze_link, watch_link_1, watch_link_2, watch_link_3];
                         const hasValidLink = !links.every((link) => !link || link.trim() === "");
@@ -332,14 +330,14 @@ export async function searchAndDownload(animes, downloadQueue) {
                 selectedEpisodes = selected;
             } else if (selectionMethod === "range") {
                 console.clear();
-                console.log(chalk.green(`\n${selectedAnime.NAME} - aralik secimi`));
+                console.log(chalk.green(`\n${selectedAnime.NAME} - Aralık Seçimi`));
 
                 const { range } = await inquirer.prompt([{
                     type: "input",
                     name: "range",
-                    message: "bolum araligini giriniz (orn: 1-12, 15, 20-25):",
+                    message: "Bölüm aralığını giriniz (Örn: 1-12, 15, 20-25):",
                     validate: (input) => {
-                        if (!input || input.trim() === "") return "lutfen gecerli bir aralik giriniz.";
+                        if (!input || input.trim() === "") return "Lütfen geçerli bir aralık giriniz.";
                         return true;
                     }
                 }]);
@@ -386,7 +384,7 @@ export async function searchAndDownload(animes, downloadQueue) {
             }
 
             if (!selectedEpisodes || selectedEpisodes.length === 0) {
-                console.log(chalk.yellow("hicbir bolum secilmedi."));
+                console.log(chalk.yellow("Hiçbir bölüm seçilmedi."));
                 continue;
             }
 
@@ -395,10 +393,10 @@ export async function searchAndDownload(animes, downloadQueue) {
             const { downloadAction } = await inquirer.prompt([{
                 type: "list",
                 name: "downloadAction",
-                message: "ne yapmak istersiniz",
+                message: "Ne yapmak istersiniz?",
                 choices: [
-                    { name: "kuyruga ekle", value: "queue" },
-                    { name: "hemen indir", value: "now" }
+                    { name: "İndirme Kuyruğuna Ekle", value: "queue" },
+                    { name: "Hemen İndir", value: "now" }
                 ]
             }]);
 
@@ -416,7 +414,7 @@ export async function searchAndDownload(animes, downloadQueue) {
                     });
                 });
                 saveQueue(downloadQueue);
-                console.log(chalk.green(`${selectedEpisodes.length} bolum kuyruga eklendi.`));
+                console.log(chalk.green(`${selectedEpisodes.length} bölüm kuyruğa eklendi.`));
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 return;
             }
@@ -426,12 +424,12 @@ export async function searchAndDownload(animes, downloadQueue) {
             }
 
             if (selectedEpisodes.length > 1) {
-                console.log(chalk.cyan(`\n${selectedEpisodes.length} bolum secildi. ayni anda en fazla ${config.maxConcurrent} indirme yapilacak.`));
+                console.log(chalk.cyan(`\n${selectedEpisodes.length} bölüm seçildi. Eşzamanlı en fazla ${config.maxConcurrent} indirme yapılacak.`));
             }
 
             const progressUI = new ProgressBar();
             selectedEpisodes.forEach(ep => {
-                progressUI.update(ep.episode_number, { percent: 0, status: 'bekliyor', name: `Bolum ${ep.episode_number}` });
+                progressUI.update(ep.episode_number, { percent: 0, status: 'Bekliyor', name: `Bölüm ${ep.episode_number}` });
             });
 
             if (selectedEpisodes.length > 1) {
@@ -440,7 +438,7 @@ export async function searchAndDownload(animes, downloadQueue) {
 
             const tasks = selectedEpisodes.map((episode) => async () => {
                 if (!episode.link) {
-                    console.log(chalk.red(`${episode.episode_number}. bolum icin indirme linki bulunamadi.`));
+                    console.log(chalk.red(`${episode.episode_number}. bölüm için indirme linki bulunamadı.`));
                     return;
                 }
 
@@ -451,14 +449,10 @@ export async function searchAndDownload(animes, downloadQueue) {
                 async function downloadEpisode(attempt = 1) {
                     try {
                         if (!isSingle) {
-                            progressUI.update(episode.episode_number, { percent: 0, status: attempt === 1 ? 'indiriliyor' : 'tekrar deneniyor' });
+                            progressUI.update(episode.episode_number, { percent: 0, status: attempt === 1 ? 'İndiriliyor' : 'Tekrar deneniyor' });
                         }
 
-                        // Check if file already exists and has size > 0 (Simple validation)
                         const finalPath = commandExists("aria2c") && config.useAria2 ? downloadPath : `${downloadPath}.mp4`; // Rough guess, actually 'dl' handles extensions differently.
-                        // Better to rely on dl's completion, but user wants post-check.
-                        // Since 'dl' function ensures download completes or throws, we assume success if no throw.
-                        // However, let's allow 'dl' to handle the main logic.
 
                         await dl(episode.link, downloadPath, {
                             silent: !isSingle,
@@ -466,7 +460,7 @@ export async function searchAndDownload(animes, downloadQueue) {
                                 if (!isSingle) {
                                     progressUI.update(episode.episode_number, {
                                         percent: data.percent,
-                                        status: attempt === 1 ? 'indiriliyor' : 'tekrar deneniyor',
+                                        status: attempt === 1 ? 'İndiriliyor' : 'Tekrar deneniyor',
                                         speed: data.speed,
                                         eta: data.eta,
                                         downloaded: data.downloaded,
@@ -479,29 +473,23 @@ export async function searchAndDownload(animes, downloadQueue) {
                             delay: config.retryDelay || 3000
                         });
 
-                        // Post-download Validation
-                        // Search for the file to get exact name since extension might vary
                         const dirFiles = fs.readdirSync(dirPath);
                         const downloadedFile = dirFiles.find(f => f.startsWith(`${safeAnimeName} - ${episode.episode_number}.`));
 
                         if (downloadedFile) {
                             const stats = fs.statSync(path.join(dirPath, downloadedFile));
-                            if (stats.size < 1024 * 1024) { // Less than 1MB is suspicious
-                                throw new Error("Dosya boyutu cok kucuk, hatali indirme olabilir.");
+                            if (stats.size < 1024 * 1024) {
+                                throw new Error("Dosya boyutu çok küçük, hatalı indirme olabilir.");
                             }
                         } else {
-                            // File not found?
-                            // Maybe it's inside a folder? 'dl' behavior depends on 'aria2'
-                            // But usually it saves to 'downloadPath' + extension.
                         }
 
                         if (!isSingle) {
-                            progressUI.update(episode.episode_number, { percent: 100, status: 'tamamlandi' });
+                            progressUI.update(episode.episode_number, { percent: 100, status: 'Tamamlandı' });
                         } else {
-                            spinner.succeed(chalk.bold(`${selectedAnime.NAME} — ${episode.episode_number}. bolum indi.`));
+                            spinner.succeed(chalk.bold(`${selectedAnime.NAME} — ${episode.episode_number}. bölüm başarıyla indirildi.`));
                         }
 
-                        // Telemetry: Download
                         await telemetry.send("download", {
                             name: selectedAnime.NAME,
                             episode: episode.episode_number
@@ -509,18 +497,17 @@ export async function searchAndDownload(animes, downloadQueue) {
 
                     } catch (error) {
                         if (attempt === 1) {
-                            // Retry once
                             if (!isSingle) {
-                                progressUI.update(episode.episode_number, { percent: 0, status: 'dogrulama hatasi, tekrar' });
+                                progressUI.update(episode.episode_number, { percent: 0, status: 'Doğrulama hatası, tekrar' });
                             }
                             await new Promise(r => setTimeout(r, 2000));
                             await downloadEpisode(2);
                         } else {
                             if (!isSingle) {
-                                progressUI.update(episode.episode_number, { percent: 0, status: 'hata' });
+                                progressUI.update(episode.episode_number, { percent: 0, status: 'Hata' });
                             } else {
-                                spinner.fail(chalk.red("hata olustu."));
-                                console.error(chalk.gray(`detay: ${error.message}`));
+                                spinner.fail(chalk.red("Hata oluştu."));
+                                console.error(chalk.gray(`Detay: ${error.message}`));
                             }
                         }
                     }
@@ -532,7 +519,7 @@ export async function searchAndDownload(animes, downloadQueue) {
             progressUI.clear();
 
             if (selectedEpisodes.length > 1) {
-                spinner.succeed(chalk.bold("indirmeler bitti"));
+                spinner.succeed(chalk.bold("İndirme işlemi tamamlandı."));
             }
             return;
         }

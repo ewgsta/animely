@@ -5,3 +5,5 @@ package-lock.json
 # Animely Helper
 animely-telemetry/
 src/telemetry/index.js.dev.js
+
+yeni/

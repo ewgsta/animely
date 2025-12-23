@@ -15,22 +15,22 @@ export async function showSettings() {
     const { action } = await inquirer.prompt([{
         type: "list",
         name: "action",
-        message: "ne degisecek:",
+        message: "Ayarlar Menüsü:",
         pageSize: 15,
         choices: [
-            { name: `oynatici (su an: ${chalk.yellow(config.defaultPlayer || "yok")})`, value: "defaultPlayer" },
-            { name: `hizlandirici (aria2) (su an: ${chalk.yellow(config.useAria2 ? "acik" : "kapali")})`, value: "aria2" },
-            ...(config.useAria2 ? [{ name: `   ↳ aria2 baglanti (su an: ${chalk.yellow(config.aria2Connections)}x)`, value: "aria2Connections" }] : []),
-            { name: `ayni anda indirme (su an: ${chalk.yellow(config.maxConcurrent)})`, value: "maxConcurrent" },
-            { name: `indirme klasoru (su an: ${chalk.yellow(config.downloadDir)})`, value: "downloadDir" },
-            { name: `indirme tekrari (su an: ${chalk.yellow(config.retryEnabled ? "acik" : "kapali")})`, value: "retryToggle" },
-            ...(config.retryEnabled ? [{ name: `   ↳ tekrar ayarlari (su an: ${chalk.yellow(config.retryCount)}x / ${chalk.yellow(config.retryDelay / 1000)}sn)`, value: "retrySettings" }] : []),
-            { name: `anime detaylarini goster (su an: ${chalk.yellow(config.showAnimeDetails !== false ? "acik" : "kapali")})`, value: "detailsToggle" },
-            { name: `anilist baglantisi (su an: ${chalk.yellow(config.anilistUsername || "bagli degil")})`, value: "anilist" },
-            ...(config.anilistToken ? [{ name: "   ↳ baglantiyi kaldir", value: "anilistLogout" }] : []),
-            { name: `telemetri (su an: ${chalk.yellow(config.telemetryEnabled ? "acik" : "kapali")})`, value: "telemetryToggle" },
+            { name: `Varsayılan Oynatıcı (Mevcut: ${chalk.yellow(config.defaultPlayer || "Seçilmedi")})`, value: "defaultPlayer" },
+            { name: `İndirme Yöneticisi (Aria2) (Mevcut: ${chalk.yellow(config.useAria2 ? "Aktif" : "Pasif")})`, value: "aria2" },
+            ...(config.useAria2 ? [{ name: `   ↳ Aria2 Bağlantı Sayısı (Mevcut: ${chalk.yellow(config.aria2Connections)}x)`, value: "aria2Connections" }] : []),
+            { name: `Eşzamanlı İndirme Limiti (Mevcut: ${chalk.yellow(config.maxConcurrent)})`, value: "maxConcurrent" },
+            { name: `İndirme Konumu (Mevcut: ${chalk.yellow(config.downloadDir)})`, value: "downloadDir" },
+            { name: `İndirme Tekrarı (Mevcut: ${chalk.yellow(config.retryEnabled ? "Aktif" : "Pasif")})`, value: "retryToggle" },
+            ...(config.retryEnabled ? [{ name: `   ↳ Tekrar Ayarları (Mevcut: ${chalk.yellow(config.retryCount)}x / ${chalk.yellow(config.retryDelay / 1000)}sn)`, value: "retrySettings" }] : []),
+            { name: `Anime Detaylarını Göster (Mevcut: ${chalk.yellow(config.showAnimeDetails !== false ? "Aktif" : "Pasif")})`, value: "detailsToggle" },
+            { name: `Anilist Entegrasyonu (Durum: ${chalk.yellow(config.anilistUsername || "Bağlı Değil")})`, value: "anilist" },
+            ...(config.anilistToken ? [{ name: "   ↳ Bağlantıyı Kes", value: "anilistLogout" }] : []),
+            { name: `Telemetri (Veri Paylaşımı) (Durum: ${chalk.yellow(config.telemetryEnabled ? "Aktif" : "Pasif")})`, value: "telemetryToggle" },
             new inquirer.Separator(),
-            { name: "geri don", value: "back" }
+            { name: "Ana Menüye Dön", value: "back" }
         ]
     }]);
 
@@ -39,7 +39,7 @@ export async function showSettings() {
     if (action === "detailsToggle") {
         config.showAnimeDetails = config.showAnimeDetails === false ? true : false;
         saveConfig(config);
-        console.log(chalk.green(`\nanime detaylari ${config.showAnimeDetails ? "acildi" : "kapatildi"}`));
+        console.log(chalk.green(`\nAnime detay görünümü ${config.showAnimeDetails ? "etkinleştirildi" : "devre dışı bırakıldı"}.`));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -50,7 +50,7 @@ export async function showSettings() {
         const { confirm } = await inquirer.prompt([{
             type: "confirm",
             name: "confirm",
-            message: "anilist baglantisini koparmak istedigine emin misin?",
+            message: "Anilist bağlantısını kesmek istediğinize emin misiniz?",
             default: false
         }]);
 
@@ -58,9 +58,9 @@ export async function showSettings() {
             config.anilistToken = undefined;
             config.anilistUsername = undefined;
             saveConfig(config);
-            console.log(chalk.yellow("\nanilist koptu"));
+            console.log(chalk.yellow("\nAnilist bağlantısı kesildi."));
         } else {
-            console.log(chalk.gray("iptal edildi"));
+            console.log(chalk.gray("İşlem iptal edildi."));
         }
 
         await new Promise(resolve => setTimeout(resolve, 1500));
@@ -71,7 +71,7 @@ export async function showSettings() {
     if (action === "telemetryToggle") {
         config.telemetryEnabled = !config.telemetryEnabled;
         saveConfig(config);
-        console.log(chalk.green(`\ntelemetri ${config.telemetryEnabled ? "acildi" : "kapatildi"}`));
+        console.log(chalk.green(`\nTelemetri ${config.telemetryEnabled ? "etkinleştirildi" : "devre dışı bırakıldı"}.`));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -85,19 +85,19 @@ export async function showSettings() {
 
         try {
             const token = await authenticate();
-            spinner.start("dogruluyorum...");
+            spinner.start("Token doğrulanıyor...");
             const username = await verifyToken(token);
             spinner.stop();
 
             if (username) {
                 config.anilistToken = token;
                 config.anilistUsername = username;
-                console.log(chalk.green(`\ngiris yapildi, hosgeldin ${username}`));
+                console.log(chalk.green(`\nGiriş başarılı! Hoş geldiniz, ${username}.`));
             } else {
-                console.log(chalk.red("\ntoken geldi ama dogrulayamadim"));
+                console.log(chalk.red("\nToken alındı ancak doğrulama başarısız oldu."));
             }
         } catch (error) {
-            console.log(chalk.red("\ngiris yapamadim: " + error.message));
+            console.log(chalk.red("\nGiriş yapılamadı: " + error.message));
         }
         await new Promise(resolve => setTimeout(resolve, 2000));
         saveConfig(config);
@@ -109,37 +109,37 @@ export async function showSettings() {
         const { player } = await inquirer.prompt([{
             type: "list",
             name: "player",
-            message: "sec bakalim:",
+            message: "Varsayılan oynatıcıyı seçin:",
             choices: [
-                { name: "vlc media player", value: "vlc" },
-                { name: "mpv player", value: "mpv" }
+                { name: "VLC Media Player", value: "vlc" },
+                { name: "MPV Player", value: "mpv" }
             ],
             default: config.defaultPlayer || "vlc"
         }]);
 
         if (!commandExists(player)) {
-            console.log(chalk.yellow(`\n${player} sistemde bulunamadi.`));
+            console.log(chalk.yellow(`\nUyarı: ${player} sistemde bulunamadı.`));
             const { install } = await inquirer.prompt([{
                 type: "confirm",
                 name: "install",
-                message: "otomatik kurayim mi?",
+                message: "Otomatik olarak yüklemek ister misiniz?",
                 default: true
             }]);
 
             if (install) {
-                console.log(chalk.yellow("kuruluyor..."));
+                console.log(chalk.yellow("Yükleme başlatılıyor, lütfen bekleyin..."));
                 const success = installPackage(player);
                 if (success) {
-                    console.log(chalk.green(`\n${player} kuruldu!`));
+                    console.log(chalk.green(`\n${player} başarıyla yüklendi!`));
                 } else {
-                    console.log(chalk.red("\nkurulum basarisiz, ama yine de oynatici olarak sectim."));
+                    console.log(chalk.red("\nYükleme başarısız oldu. Yine de oynatıcı olarak seçildi."));
                 }
             }
         }
 
         config.defaultPlayer = player;
         saveConfig(config);
-        console.log(chalk.green("\noynatici degistirildi"));
+        console.log(chalk.green("\nVarsayılan oynatıcı güncellendi."));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -149,13 +149,13 @@ export async function showSettings() {
         const { limit } = await inquirer.prompt([{
             type: "number",
             name: "limit",
-            message: "ayni anda kac indirme olsun (1-10):",
+            message: "Eşzamanlı indirme sayısı (1-10):",
             default: config.maxConcurrent,
-            validate: (input) => (input > 0 && input <= 10) ? true : "1 ile 10 arasi girj"
+            validate: (input) => (input > 0 && input <= 10) ? true : "Lütfen 1 ile 10 arasında bir değer girin."
         }]);
         config.maxConcurrent = limit;
         saveConfig(config);
-        console.log(chalk.green("\nlimit ayarlandi"));
+        console.log(chalk.green("\nİndirme limiti güncellendi."));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -165,13 +165,13 @@ export async function showSettings() {
         const { dir } = await inquirer.prompt([{
             type: "input",
             name: "dir",
-            message: "yeni klasor yolu:",
+            message: "Yeni indirme konumu:",
             default: config.downloadDir,
-            validate: (input) => input.trim() !== "" ? true : "bos gecme"
+            validate: (input) => input.trim() !== "" ? true : "Bu alan boş bırakılamaz."
         }]);
         config.downloadDir = dir;
         saveConfig(config);
-        console.log(chalk.green("\nklasor degisti"));
+        console.log(chalk.green("\nİndirme konumu güncellendi."));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -179,7 +179,7 @@ export async function showSettings() {
 
     if (action === "retryToggle") {
         config.retryEnabled = !config.retryEnabled;
-        console.log(chalk.green(`\nindirme tekrari ${config.retryEnabled ? "acildi" : "kapatildi"}`));
+        console.log(chalk.green(`\nİndirme tekrarı ${config.retryEnabled ? "etkinleştirildi" : "devre dışı bırakıldı"}.`));
         await new Promise(resolve => setTimeout(resolve, 1000));
         saveConfig(config);
         await showSettings();
@@ -191,16 +191,16 @@ export async function showSettings() {
             {
                 type: "number",
                 name: "count",
-                message: "hata olursa kac kere denesin (0-10):",
+                message: "Maksimum tekrar deneme sayısı (0-10):",
                 default: config.retryCount,
-                validate: (input) => (input >= 0 && input <= 10) ? true : "0-10 arasi gir"
+                validate: (input) => (input >= 0 && input <= 10) ? true : "Lütfen 0 ile 10 arasında bir değer girin."
             },
             {
                 type: "number",
                 name: "delay",
-                message: "kac sn beklesin:",
+                message: "Tekrarlar arası bekleme süresi (saniye):",
                 default: config.retryDelay / 1000,
-                validate: (input) => (input >= 0) ? true : "pozitif gir"
+                validate: (input) => (input >= 0) ? true : "Lütfen pozitif bir değer girin."
             }
         ]);
 
@@ -208,7 +208,7 @@ export async function showSettings() {
         config.retryDelay = delay * 1000;
 
         saveConfig(config);
-        console.log(chalk.green("\ntekrar ayarlari guncellendi"));
+        console.log(chalk.green("\nTekrar ayarları güncellendi."));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;

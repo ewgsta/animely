@@ -7,8 +7,7 @@ import chalk from "chalk";
 const isWindows = os.platform() === "win32";
 
 /**
- * Checks if MPV is installed/available in PATH or common locations
- * @returns {Promise<string|null>} Path to MPV executable or null
+ * @returns {Promise<string|null>}
  */
 export async function getMpvPath() {
 	if (isWindows) {
@@ -16,7 +15,6 @@ export async function getMpvPath() {
 			"C:\\Program Files\\MPV\\mpv.exe",
 			"C:\\Program Files (x86)\\MPV\\mpv.exe",
 			"C:\\ProgramData\\chocolatey\\bin\\mpv.exe",
-			// Scoop Path
 			`${process.env.USERPROFILE}\\scoop\\apps\\mpv\\current\\mpv.exe`
 		];
 
@@ -25,18 +23,15 @@ export async function getMpvPath() {
 		}
 
 		try {
-			// bakiom
 			const result = execSync("where mpv").toString().trim().split("\n")[0];
 			if (result && fs.existsSync(result)) return result;
 		} catch (e) {
-			// bulamadım
 		}
 	} else {
 		try {
 			const result = execSync("which mpv").toString().trim();
 			if (result) return result;
 		} catch (e) {
-			// bulamadım
 		}
 
 		if (fs.existsSync("/usr/bin/mpv")) return "/usr/bin/mpv";
@@ -48,34 +43,33 @@ export async function getMpvPath() {
 }
 
 /**
- * Tries to install MPV using package managers
  * @returns {Promise<boolean>}
  */
 export async function installMpv() {
 	const platform = os.platform();
 
 	if (platform === "win32") {
-		console.log(chalk.cyan("mpv player bulunamadi. winget ile kurulmaya calisiliyor..."));
+		console.log(chalk.cyan("MPV Player bulunamadı. Winget ile kurulmaya çalışılıyor..."));
 		try {
 			execSync("winget install io.mpv.mpv -e --source winget", { stdio: "inherit" });
-			console.log(chalk.green("mpv basariyla kuruldu!"));
+			console.log(chalk.green("MPV başarıyla kuruldu!"));
 			return true;
 		} catch (error) {
-			console.error(chalk.red("mpv kurulumu basarisiz oldu. lutfen manuel olarak kurunuz: https://mpv.io/installation/"));
+			console.error(chalk.red("MPV kurulumu başarısız oldu. Lütfen manuel olarak kurunuz: https://mpv.io/installation/"));
 			return false;
 		}
 	} else if (platform === "darwin") {
-		console.log(chalk.cyan("mpv player bulunamadi. homebrew ile kurulmaya calisiliyor..."));
+		console.log(chalk.cyan("MPV Player bulunamadı. Homebrew ile kurulmaya çalışılıyor..."));
 		try {
 			execSync("brew install mpv", { stdio: "inherit" });
-			console.log(chalk.green("mpv basariyla kuruldu!"));
+			console.log(chalk.green("MPV başarıyla kuruldu!"));
 			return true;
 		} catch (error) {
-			console.error(chalk.red("mpv kurulumu basarisiz oldu. lutfen manuel olarak kurunuz veya homebrew'in yuklu oldugundan emin olun."));
+			console.error(chalk.red("MPV kurulumu başarısız oldu. Lütfen manuel olarak kurunuz veya Homebrew'in yüklü olduğundan emin olun."));
 			return false;
 		}
 	} else if (platform === "linux") {
-		console.log(chalk.cyan("mpv player bulunamadi. paket yoneticisi ile kurulmaya calisiliyor..."));
+		console.log(chalk.cyan("MPV Player bulunamadı. Paket yöneticisi ile kurulmaya çalışılıyor..."));
 
 		const managers = [
 			{ cmd: "apt-get", install: "sudo apt-get update && sudo apt-get install mpv -y" },
@@ -88,9 +82,9 @@ export async function installMpv() {
 		for (const mgr of managers) {
 			try {
 				execSync(`which ${mgr.cmd}`, { stdio: "ignore" });
-				console.log(chalk.yellow(`${mgr.cmd} tespit edildi. kurulum baslatiliyor (sudo gerekebilir)...`));
+				console.log(chalk.yellow(`${mgr.cmd} tespit edildi. Kurulum başlatılıyor (sudo gerekebilir)...`));
 				execSync(mgr.install, { stdio: "inherit" });
-				console.log(chalk.green("mpv basariyla kuruldu!"));
+				console.log(chalk.green("MPV başarıyla kuruldu!"));
 				return true;
 			} catch (e) {
 				continue;
@@ -102,7 +96,6 @@ export async function installMpv() {
 }
 
 /**
- * Opens the given URL in MPV
  * @param {string} url 
  * @returns {Promise<void>}
  */
@@ -114,11 +107,11 @@ export async function openInMpv(url) {
 		if (installed) {
 			mpvPath = await getMpvPath();
 		} else {
-			throw new Error("mpv player bulunamadi ve kurulamadi.");
+			throw new Error("MPV Player bulunamadı ve kurulamadı.");
 		}
 	}
 
-	if (!mpvPath) throw new Error("mpv player yolu bulunamadi.");
+	if (!mpvPath) throw new Error("MPV Player dosya yolu bulunamadı.");
 
 	return new Promise((resolve, reject) => {
 		const args = [url, "--force-window", "--fs"];

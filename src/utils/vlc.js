@@ -8,7 +8,6 @@ import chalk from "chalk";
 const isWindows = os.platform() === "win32";
 
 /**
- * Checks if VLC is installed/available in PATH or common locations
  * @returns {Promise<string|null>} Path to VLC executable or null
  */
 export async function getVlcPath() {
@@ -23,18 +22,15 @@ export async function getVlcPath() {
 		}
 
 		try {
-			// kontrol ediom
 			const result = execSync("where vlc").toString().trim().split("\n")[0];
 			if (result && fs.existsSync(result)) return result;
 		} catch (e) {
-			// bulamadım
 		}
 	} else {
 		try {
 			const result = execSync("which vlc").toString().trim();
 			if (result) return result;
 		} catch (e) {
-			// bulamadım
 		}
 
 		if (fs.existsSync("/usr/bin/vlc")) return "/usr/bin/vlc";
@@ -52,27 +48,27 @@ export async function installVlc() {
 	const platform = os.platform();
 
 	if (platform === "win32") {
-		console.log(chalk.cyan("vlc player bulunamadi. winget ile kurulmaya calisiliyor..."));
+		console.log(chalk.cyan("VLC Player bulunamadı. Winget ile kurulmaya çalışılıyor..."));
 		try {
 			execSync("winget install VideoLAN.VLC -e --source winget", { stdio: "inherit" });
-			console.log(chalk.green("vlc basariyla kuruldu!"));
+			console.log(chalk.green("VLC başarıyla kuruldu!"));
 			return true;
 		} catch (error) {
-			console.error(chalk.red("vlc kurulumu basarisiz oldu. lutfen manuel olarak kurunuz: https://www.videolan.org/vlc/"));
+			console.error(chalk.red("VLC kurulumu başarısız oldu. Lütfen manuel olarak kurunuz: https://www.videolan.org/vlc/"));
 			return false;
 		}
 	} else if (platform === "darwin") {
-		console.log(chalk.cyan("vlc player bulunamadi. homebrew ile kurulmaya calisiliyor..."));
+		console.log(chalk.cyan("VLC Player bulunamadı. Homebrew ile kurulmaya çalışılıyor..."));
 		try {
 			execSync("brew install --cask vlc", { stdio: "inherit" });
-			console.log(chalk.green("vlc basariyla kuruldu!"));
+			console.log(chalk.green("VLC başarıyla kuruldu!"));
 			return true;
 		} catch (error) {
-			console.error(chalk.red("vlc kurulumu basarisiz oldu. lutfen manuel olarak kurunuz veya homebrew'in yuklu oldugundan emin olun."));
+			console.error(chalk.red("VLC kurulumu başarısız oldu. Lütfen manuel olarak kurunuz veya Homebrew'in yüklü olduğundan emin olun."));
 			return false;
 		}
 	} else if (platform === "linux") {
-		console.log(chalk.cyan("vlc player bulunamadi. paket yoneticisi ile kurulmaya calisiliyor..."));
+		console.log(chalk.cyan("VLC Player bulunamadı. Paket yöneticisi ile kurulmaya çalışılıyor..."));
 
 		const managers = [
 			{ cmd: "apt-get", install: "sudo apt-get update && sudo apt-get install vlc -y" },
@@ -85,16 +81,16 @@ export async function installVlc() {
 		for (const mgr of managers) {
 			try {
 				execSync(`which ${mgr.cmd}`, { stdio: "ignore" });
-				console.log(chalk.yellow(`${mgr.cmd} tespit edildi. kurulum baslatiliyor (sudo gerekebilir)...`));
+				console.log(chalk.yellow(`${mgr.cmd} tespit edildi. Kurulum başlatılıyor (sudo gerekebilir)...`));
 				execSync(mgr.install, { stdio: "inherit" });
-				console.log(chalk.green("vlc basariyla kuruldu!"));
+				console.log(chalk.green("VLC başarıyla kuruldu!"));
 				return true;
 			} catch (e) {
 				continue;
 			}
 		}
 
-		console.error(chalk.red("uygun paket yoneticisi bulunamadi. lutfen vlc'yi manuel olarak kurunuz."));
+		console.error(chalk.red("Uygun paket yöneticisi bulunamadı. Lütfen VLC'yi manuel olarak kurunuz."));
 		return false;
 	}
 
@@ -102,7 +98,6 @@ export async function installVlc() {
 }
 
 /**
- * Opens the URL in VLC
  * @param {string} url 
  * @returns {Promise<number|void>}
  */
@@ -114,13 +109,13 @@ export async function openInVlc(url) {
 		if (installed) {
 			vlcPath = await getVlcPath();
 		} else {
-			throw new Error("vlc player bulunamadi ve kurulamadi.");
+			throw new Error("VLC Player bulunamadı ve kurulamadı.");
 		}
 	}
 
-	if (!vlcPath) throw new Error("vlc path bulunamadi.");
+	if (!vlcPath) throw new Error("VLC dosya yolu bulunamadı.");
 
-	console.log(chalk.cyan("vlc baslatiliyor..."));
+	console.log(chalk.cyan("VLC başlatılıyor..."));
 
 	return new Promise((resolve, reject) => {
 		const child = spawn(vlcPath, ["--fullscreen", url], {

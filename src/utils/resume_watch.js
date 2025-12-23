@@ -17,14 +17,14 @@ import { API_URL } from "../constants.js";
  */
 export async function resumeWatch(anime, nextEpisodeNumber) {
     console.clear();
-    spinner.start(`${anime.NAME} bolumleri geliyo...`);
+    spinner.start(`${anime.NAME} bölüm listesi getiriliyor...`);
 
     let episodes;
     try {
         const response = await axios.post(`${API_URL}/searchAnime`, { payload: anime.SLUG });
         episodes = response.data.episodes;
     } catch (error) {
-        spinner.fail(chalk.red("bolumleri cekemedim"));
+        spinner.fail(chalk.red("Bölüm listesi alınamadı."));
         await new Promise(resolve => setTimeout(resolve, 2000));
         return;
     }
@@ -33,7 +33,7 @@ export async function resumeWatch(anime, nextEpisodeNumber) {
     const episode = episodes.find(e => e.episode_number == nextEpisodeNumber);
 
     if (!episode) {
-        console.log(chalk.yellow(`\n${nextEpisodeNumber}. bolum yok (daha cikmamis olabilir)`));
+        console.log(chalk.yellow(`\n${nextEpisodeNumber}. bölüm bulunamadı (Henüz yayınlanmamış olabilir).`));
         await new Promise(resolve => setTimeout(resolve, 2000));
         return;
     }
@@ -42,7 +42,7 @@ export async function resumeWatch(anime, nextEpisodeNumber) {
     const link = getLink(links);
 
     if (!link) {
-        console.log(chalk.red("\nlink yok"));
+        console.log(chalk.red("\nİzleme linki bulunamadı."));
         await new Promise(resolve => setTimeout(resolve, 2000));
         return;
     }
@@ -50,8 +50,8 @@ export async function resumeWatch(anime, nextEpisodeNumber) {
     const config = getConfig();
     const player = config.defaultPlayer || "vlc";
 
-    console.log(chalk.green(`\n${anime.NAME} — ${nextEpisodeNumber}. bolum aciliyor (${player})...`));
-    setActivity(`${anime.NAME}`, `${nextEpisodeNumber}. bolum izleniyor`);
+    console.log(chalk.green(`\n${anime.NAME} — ${nextEpisodeNumber}. bölüm açılıyor (${player})...`));
+    setActivity(`${anime.NAME}`, `${nextEpisodeNumber}. Bölüm İzleniyor`);
 
     try {
         if (player === "mpv") {
@@ -60,12 +60,12 @@ export async function resumeWatch(anime, nextEpisodeNumber) {
             await openInVlc(link);
         }
 
-        setActivity("ana menude takiliyor");
+        setActivity("Ana menüde geziniyor");
 
         const { watched } = await inquirer.prompt([{
             type: "confirm",
             name: "watched",
-            message: "izledin mi, isaretleyim mi?",
+            message: "Bölümü izlendi olarak işaretlemek ister misiniz?",
             default: true
         }]);
 
@@ -79,7 +79,7 @@ export async function resumeWatch(anime, nextEpisodeNumber) {
             }
 
             if (config.anilistToken && !anilistId) {
-                spinner.start("anilistte ariyorum...");
+                spinner.start("Anilist veritabanında aranıyor...");
                 anilistId = await searchAnime(anime.NAME);
                 spinner.stop();
             }
@@ -87,7 +87,7 @@ export async function resumeWatch(anime, nextEpisodeNumber) {
             updateHistory(anime.NAME, nextEpisodeNumber, totalEpisodes, anilistId);
 
             if (config.anilistToken && anilistId) {
-                spinner.start("gecmise eklendi");
+                spinner.start("Geçmiş güncelleniyor...");
                 const success = await updateAnilistProgress(anilistId, nextEpisodeNumber, nextEpisodeNumber >= totalEpisodes);
                 spinner.stop();
                 if (success) {
@@ -97,7 +97,7 @@ export async function resumeWatch(anime, nextEpisodeNumber) {
             await new Promise(resolve => setTimeout(resolve, 1500));
         }
     } catch (error) {
-        console.error(chalk.red(`oynatici hatasi: ${error.message}`));
+        console.error(chalk.red(`Oynatıcı hatası: ${error.message}`));
         await new Promise(resolve => setTimeout(resolve, 2000));
     }
 }

@@ -7,22 +7,21 @@ export class ProgressBar {
     }
 
     /**
-     * İndirme öğesi ekle veya güncelle
-     * @param {string|number} id Benzersiz kimlik
-     * @param {object} data Veri
-     * @param {string} [data.name] Görünen isim
-     * @param {number} [data.percent] Yüzde (0-100)
-     * @param {string} [data.status] Durum (bekliyor, indiriliyor, tamamlandi, hata)
-     * @param {number} [data.speed] Hız (byte/s)
-     * @param {number} [data.eta] Kalan süre (saniye)
-     * @param {number} [data.downloaded] İndirilen miktar (byte)
-     * @param {number} [data.total] Toplam boyut (byte)
+     * @param {string|number} id
+     * @param {object} data
+     * @param {string} [data.name]
+     * @param {number} [data.percent]
+     * @param {string} [data.status]
+     * @param {number} [data.speed]
+     * @param {number} [data.eta]
+     * @param {number} [data.downloaded]
+     * @param {number} [data.total]
      */
     update(id, data) {
         const existing = this.items.get(id) || {
             name: '',
             percent: 0,
-            status: 'bekliyor',
+            status: 'Bekliyor',
             speed: 0,
             eta: 0,
             downloaded: 0,
@@ -34,7 +33,7 @@ export class ProgressBar {
 
     render() {
         const activeItems = Array.from(this.items.values())
-            .filter(data => data.status === 'indiriliyor');
+            .filter(data => data.status === 'İndiriliyor');
 
         if (activeItems.length === 0 && this.lastLineCount === 0) return;
 
