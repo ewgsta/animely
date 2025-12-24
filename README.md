@@ -1,6 +1,6 @@
-&lt;div align="center"&gt;
-  &lt;img src="https://raw.githubusercontent.com/ewgsta/animely/main/docs/img/phee.png" alt="Animely Logo" style="border-radius: 35px; width: 200px; height: auto;"&gt;
-&lt;/div&gt;
+<div align="center">
+  <img src="https://raw.githubusercontent.com/ewgsta/animely/main/docs/img/phee.png" alt="Animely Logo" width="200">
+</div>
 
 **Animely, terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI aracıdır.**
 
