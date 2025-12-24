@@ -33,7 +33,7 @@
 ### Arama
 ![arama](https://r2.fakecrime.bio/uploads/95ff108b-dc25-44a2-a51a-1457b35ce99c.png)
 
-### Anime Kısımı
+### Anime 
 ![anime kısımı](https://r2.fakecrime.bio/uploads/4f92ad64-056e-4661-bc3a-d7e9def1793f.png)
 
 ## Desteklenen Kaynaklar
@@ -41,7 +41,7 @@
 | Kaynak | Arama | İzleme | İndirme | Kalite Seçimi |
 |--------|-------|--------|---------|---------------|
 | Animely.net | ✅ Fuzzy Search | ✅ | ✅ | ❌ |
-| Animecix.tv | ✅ API Search | ✅ | ❌ (Yakında eklenecek.) | ✅ 480p/720p/1080p |
+| Animecix.tv | ✅ API Search | ✅ | ✅ | ✅ 480p/720p/1080p |
 
 ## Kurulum
 
