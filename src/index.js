@@ -1,13 +1,11 @@
 #!/usr/bin/env node
-import { line } from "./functions/variables.js";
 import { spinner } from "./utils/spinner.js";
 import { getConfig, saveConfig } from "./utils/storage/config.js";
 import { loadQueue, saveQueue } from "./utils/storage/queue.js";
 import { initDiscordRpc, setActivity } from "./utils/discord.js";
-import { timeFormat } from "./functions/time.js";
-import { API_URL } from "./constants.js";
 import { telemetry } from "./telemetry/index.js";
 import { sources, getSourceById } from "./sources/index.js";
+import { infoBox } from "./utils/ui/box.js";
 
 import { showSettings } from "./utils/ui/settings_ui.js";
 import { showHistory } from "./utils/ui/show_history.js";
@@ -29,6 +27,9 @@ process.on('SIGINT', () => {
 });
 
 const pkg = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf-8"));
+
+process.stdout.write(`\x1b]0;Animely CLI | v${pkg.version}\x07`);
+
 const notifier = updateNotifier({
 	pkg,
 	updateCheckInterval: 0
@@ -64,7 +65,6 @@ if (notifier.update) {
 		const config = getConfig();
 		const currentSource = getSourceById(config.defaultSource) || sources[0];
 
-		// Animely kaynağı için anime listesini önceden yükle
 		let animes = null;
 		if (currentSource.supportsLocalSearch && currentSource.getAnimeList) {
 			try {
@@ -151,13 +151,11 @@ if (notifier.update) {
 			const currentConfig = getConfig();
 			const activeSource = getSourceById(currentConfig.defaultSource) || sources[0];
 
-			console.log([
-				`${chalk.gray(timeFormat())} Animely CLI ${chalk.dim(`[${activeSource.name}]`)}`,
-				`${chalk.gray(timeFormat())} GitHub: ${chalk.blue.underline("https://github.com/ewgsta/animely")}`,
-			].join("\n"));
+			console.log(chalk.bgCyan.black(` Animely CLI `) + chalk.gray(` v${pkg.version} | ${activeSource.name}`));
 
 			if (downloadQueue.length > 0) {
-				console.log(chalk.yellow(`\n  Tamamlanmamış ${downloadQueue.length} indirme görevi var!`));
+				console.log("");
+				infoBox(`Tamamlanmamış ${downloadQueue.length} indirme görevi var!`);
 			}
 
 			const history = loadHistory();
@@ -167,7 +165,6 @@ if (notifier.update) {
 			let resumeAnime = null;
 			let nextEpisode = null;
 
-			// Sadece Animely kaynağında devam et özelliği
 			if (lastWatched && !lastWatched.completed && animes && activeSource.id === "animely") {
 				const found = animes.find(a => a.NAME === lastWatched.name);
 				if (found) {
@@ -176,7 +173,7 @@ if (notifier.update) {
 				}
 			}
 
-			console.log(chalk.gray(line.repeat(100)));
+			console.log(""); 
 
 			const choices = [
 				{ name: "Anime Ara", value: "search" },
@@ -204,6 +201,7 @@ if (notifier.update) {
 				type: "list",
 				name: "action",
 				message: "Bir işlem seçin:",
+				loop: false,
 				choices: choices
 			}]);
 
@@ -217,7 +215,6 @@ if (notifier.update) {
 			} else if (action === "history") {
 				await showHistory();
 			} else if (action === "search") {
-				// Kaynak değişmiş olabilir, güncel kaynağı al
 				const searchConfig = getConfig();
 				const searchSource = getSourceById(searchConfig.defaultSource) || sources[0];
 

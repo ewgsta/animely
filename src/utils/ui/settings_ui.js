@@ -1,10 +1,9 @@
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { getConfig, saveConfig } from "../storage/config.js";
-import { line } from "../../functions/variables.js";
+import { successBox } from "./box.js";
 import { authenticate, verifyToken } from "../anilist.js";
 import { spinner } from "../spinner.js";
-import { AUTH_URL } from "../../constants.js";
 import { commandExists, installPackage } from "../system.js";
 import { sources } from "../../sources/index.js";
 
@@ -13,16 +12,18 @@ export async function showSettings() {
     const currentSource = sources.find(s => s.id === config.defaultSource) || sources[0];
 
     console.clear();
+    console.log(chalk.bgCyan.black(` Ayarlar `));
 
     const { action } = await inquirer.prompt([{
         type: "list",
         name: "action",
-        message: "Ayarlar Menüsü:",
+        message: 'Neyi değiştirmek istersin?',
         pageSize: 15,
+        loop: false,
         choices: [
             { name: `Anime Kaynağı (Mevcut: ${chalk.yellow(currentSource.name)})`, value: "defaultSource" },
-            { name: `Varsayılan Oynatıcı (Mevcut: ${chalk.yellow(config.defaultPlayer || "Seçilmedi")})`, value: "defaultPlayer" },
-            { name: `İndirme Yöneticisi (Aria2) (Mevcut: ${chalk.yellow(config.useAria2 ? "Aktif" : "Pasif")})`, value: "aria2" },
+            { name: `Oynatıcı (Mevcut: ${chalk.yellow(config.defaultPlayer || "Seçilmedi")})`, value: "defaultPlayer" },
+            { name: `İndirme Yöneticisi (Aria2) (${chalk.yellow(config.useAria2 ? "Aktif" : "Pasif")})`, value: "aria2" },
             ...(config.useAria2 ? [{ name: `   ↳ Aria2 Bağlantı Sayısı (Mevcut: ${chalk.yellow(config.aria2Connections)}x)`, value: "aria2Connections" }] : []),
             { name: `Eşzamanlı İndirme Limiti (Mevcut: ${chalk.yellow(config.maxConcurrent)})`, value: "maxConcurrent" },
             { name: `İndirme Konumu (Mevcut: ${chalk.yellow(config.downloadDir)})`, value: "downloadDir" },
@@ -31,7 +32,7 @@ export async function showSettings() {
             { name: `Anime Detaylarını Göster (Mevcut: ${chalk.yellow(config.showAnimeDetails !== false ? "Aktif" : "Pasif")})`, value: "detailsToggle" },
             { name: `Anilist Entegrasyonu (Durum: ${chalk.yellow(config.anilistUsername || "Bağlı Değil")})`, value: "anilist" },
             ...(config.anilistToken ? [{ name: "   ↳ Bağlantıyı Kes", value: "anilistLogout" }] : []),
-            { name: `Telemetri (Veri Paylaşımı) (Durum: ${chalk.yellow(config.telemetryEnabled ? "Aktif" : "Pasif")})`, value: "telemetryToggle" },
+            { name: `Telemetri (Anonim) (Durum: ${chalk.yellow(config.telemetryEnabled ? "Aktif" : "Pasif")})`, value: "telemetryToggle" },
             new inquirer.Separator(),
             { name: "Ana Menüye Dön", value: "back" }
         ]
@@ -53,7 +54,7 @@ export async function showSettings() {
 
         config.defaultSource = source;
         saveConfig(config);
-        console.log(chalk.green("\nAnime kaynağı güncellendi."));
+        successBox("Anime kaynağı güncellendi.");
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -62,7 +63,7 @@ export async function showSettings() {
     if (action === "detailsToggle") {
         config.showAnimeDetails = config.showAnimeDetails === false ? true : false;
         saveConfig(config);
-        console.log(chalk.green(`\nAnime detay görünümü ${config.showAnimeDetails ? "etkinleştirildi" : "devre dışı bırakıldı"}.`));
+        successBox(`Anime detay görünümü ${config.showAnimeDetails ? "etkinleştirildi" : "devre dışı bırakıldı"}.`);
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -94,7 +95,7 @@ export async function showSettings() {
     if (action === "telemetryToggle") {
         config.telemetryEnabled = !config.telemetryEnabled;
         saveConfig(config);
-        console.log(chalk.green(`\nTelemetri ${config.telemetryEnabled ? "etkinleştirildi" : "devre dışı bırakıldı"}.`));
+        successBox(`Telemetri ${config.telemetryEnabled ? "etkinleştirildi" : "devre dışı bırakıldı"}.`);
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -163,7 +164,7 @@ export async function showSettings() {
 
         config.defaultPlayer = player;
         saveConfig(config);
-        console.log(chalk.green("\nVarsayılan oynatıcı güncellendi."));
+        successBox("Varsayılan oynatıcı güncellendi.");
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -179,7 +180,32 @@ export async function showSettings() {
         }]);
         config.maxConcurrent = limit;
         saveConfig(config);
-        console.log(chalk.green("\nİndirme limiti güncellendi."));
+        successBox("İndirme limiti güncellendi.");
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await showSettings();
+        return;
+    }
+
+    if (action === "aria2") {
+        config.useAria2 = !config.useAria2;
+        saveConfig(config);
+        successBox(`Aria2 ${config.useAria2 ? "etkinleştirildi" : "devre dışı bırakıldı"}.`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await showSettings();
+        return;
+    }
+
+    if (action === "aria2Connections") {
+        const { connections } = await inquirer.prompt([{
+            type: "number",
+            name: "connections",
+            message: "Aria2 bağlantı sayısı (1-32):",
+            default: config.aria2Connections || 16,
+            validate: (input) => (input > 0 && input <= 32) ? true : "Lütfen 1 ile 32 arasında bir değer girin."
+        }]);
+        config.aria2Connections = connections;
+        saveConfig(config);
+        successBox("Aria2 bağlantı sayısı güncellendi.");
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -196,7 +222,7 @@ export async function showSettings() {
         }]);
         config.downloadDir = dir;
         saveConfig(config);
-        console.log(chalk.green("\nİndirme konumu güncellendi."));
+        successBox("İndirme konumu güncellendi.");
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -204,7 +230,7 @@ export async function showSettings() {
 
     if (action === "retryToggle") {
         config.retryEnabled = !config.retryEnabled;
-        console.log(chalk.green(`\nİndirme tekrarı ${config.retryEnabled ? "etkinleştirildi" : "devre dışı bırakıldı"}.`));
+        successBox(`İndirme tekrarı ${config.retryEnabled ? "etkinleştirildi" : "devre dışı bırakıldı"}.`);
         await new Promise(resolve => setTimeout(resolve, 1000));
         saveConfig(config);
         await showSettings();
@@ -233,7 +259,7 @@ export async function showSettings() {
         config.retryDelay = delay * 1000;
 
         saveConfig(config);
-        console.log(chalk.green("\nTekrar ayarları güncellendi."));
+        successBox("Tekrar ayarları güncellendi.");
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;

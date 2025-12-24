@@ -1,7 +1,6 @@
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { loadHistory } from "../storage/history.js";
-import { line } from "../../functions/variables.js";
 import { stats } from "./stats.js";
 
 export async function showHistory() {
@@ -12,13 +11,14 @@ export async function showHistory() {
     const inProgress = items.filter(i => !i.completed);
 
     console.clear();
-    console.log(chalk.bold("\nİzleme Geçmişi"));
-    console.log(chalk.gray(line.repeat(50)));
+    console.log(chalk.bgMagenta.black(` İzleme Geçmişi `));
+    console.log("");
 
     const { type } = await inquirer.prompt([{
         type: "list",
         name: "type",
         message: "Hangi listeyi görüntülemek istersiniz?",
+        loop: false,
         choices: [
             { name: "İstatistikler", value: "stats" },
             { name: `Devam Edenler (${inProgress.length})`, value: "progress" },
@@ -38,16 +38,17 @@ export async function showHistory() {
 
     if (type === "completed") {
         console.clear();
-        console.log(chalk.green("\nTamamlanan Animeler"));
-        console.log(chalk.gray(line.repeat(50)));
+        console.log(chalk.bgGreen.black(` ✓ Tamamlanan Animeler `));
+        console.log("");
 
         if (completed.length === 0) {
-            console.log(chalk.yellow("Henüz tamamlanmış bir anime yok."));
+            console.log(chalk.yellow("  Henüz tamamlanmış bir anime yok."));
         } else {
             completed.forEach(anime => {
-                console.log(`${chalk.cyan(anime.name)} - ${chalk.gray(new Date(anime.lastWatchedAt).toLocaleDateString())}`);
+                console.log(`  ${chalk.cyan("●")} ${chalk.white(anime.name)} ${chalk.gray(`- ${new Date(anime.lastWatchedAt).toLocaleDateString()}`)}`);
             });
         }
+        console.log("");
 
         await inquirer.prompt([{ type: "input", name: "dummy", message: "Geri dönmek için Enter'a basın..." }]);
         await showHistory();
@@ -63,6 +64,7 @@ export async function showHistory() {
             type: "list",
             name: "anime",
             message: "Detaylarını görmek istediğiniz animeyi seçin:",
+            loop: false,
             choices: [
                 ...inProgress.map(i => ({
                     name: `${i.name} ${chalk.gray(`(Son izlenen: ${i.lastEpisode}. Bölüm)`)}`,

@@ -27,7 +27,7 @@
 | Kaynak | Arama | İzleme | İndirme | Kalite Seçimi |
 |--------|-------|--------|---------|---------------|
 | Animely.net | ✅ Fuzzy Search | ✅ | ✅ | ❌ |
-| Animecix.tv | ✅ API Search | ✅ | ❌ (Yakında eklenecek.) | ✅ 480p/720p/1080p |
+| Animecix.tv | ✅ API Search | ✅ | ✅ | ✅ 480p/720p/1080p |
 
 ## Kurulum
 
