@@ -1,6 +1,6 @@
-<div align="center">
-  <img src="https://raw.githubusercontent.com/ewgsta/animely/main/docs/img/phee.png" alt="Animely Logo" style="border-radius: 35px; width: 200px; height: auto;">
-</div>
+&lt;div align="center"&gt;
+  &lt;img src="https://raw.githubusercontent.com/ewgsta/animely/main/docs/img/phee.png" alt="Animely Logo" style="border-radius: 35px; width: 200px; height: auto;"&gt;
+&lt;/div&gt;
 
 **Animely, terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI aracıdır.**
 
@@ -21,6 +21,20 @@
 *   **Gelişmiş Arama:** Animely kaynağında fuzzy search ile anime ismini yazın, en iyi eşleşmeleri anında bulun.
 *   **Hızlandırıcı (Aria2):** Desteklenen indirmelerde `aria2c` motorunu kullanarak (16x bağlantı ile) indirmeleri çok daha hızlı yapın.
 *   **Kullanıcı Dostu Arayüz:** Renkli, anlaşılır, Türkçe ve etkileşimli menüler.
+
+## Görseller
+
+### Menü
+![menü](https://r2.fakecrime.bio/uploads/10b1f77e-f967-45bf-9a74-e4c539c52dfe.png)
+
+### Ayarlar
+![ayarlar](https://r2.fakecrime.bio/uploads/6a01a11a-309c-4d3a-8d40-04ed81e4476b.png)
+
+### Arama
+![arama](https://r2.fakecrime.bio/uploads/95ff108b-dc25-44a2-a51a-1457b35ce99c.png)
+
+### Anime Kısımı
+![anime kısımı](https://r2.fakecrime.bio/uploads/4f92ad64-056e-4661-bc3a-d7e9def1793f.png)
 
 ## Desteklenen Kaynaklar
 
@@ -57,7 +71,7 @@ Ana menüden "Ayarlar" seçeneğine giderek:
 *   Eşzamanlı indirme sayısını değiştirebilirsiniz.
 *   İndirme klasörünü özelleştirebilirsiniz.
 
-> **Not:** Ayarlar ve indirme kuyruğu dosyanız, kullanıcı ana dizininizde (`~/.animely/`) güvenli bir şekilde saklanır.
+&gt; **Not:** Ayarlar ve indirme kuyruğu dosyanız, kullanıcı ana dizininizde (`~/.animely/`) güvenli bir şekilde saklanır.
 
 ## Gereksinimler
 
