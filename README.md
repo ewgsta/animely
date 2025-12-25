@@ -1,13 +1,12 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/ewgsta/animely/main/docs/img/phee.png" alt="Animely Logo" width="200">
-
+  <img src="https://raw.githubusercontent.com/ewgsta/animely/main/docs/img/phee.png" alt="Animely-chan" width="200">
+</div>
 
   **Terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI aracı.**
   
   [![npm version](https://img.shields.io/npm/v/animely.svg)](https://www.npmjs.com/package/animely)
   [![AUR version](https://img.shields.io/aur/version/animely)](https://aur.archlinux.org/packages/animely)
   [![License](https://img.shields.io/badge/license-CC%20BY--NC--ND%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
-</div>
 
 ## Özellikler
 
@@ -77,6 +76,36 @@ Ana menüden "Ayarlar" seçeneğine giderek:
 
 > Ayarlar `~/.animely/` klasöründe saklanır.
 
+## Katkıda Bulunun
+
+Projeye katkıda bulunmak isterseniz:
+
+1. Fork'layın
+2. Feature branch oluşturun (`git checkout -b yeni-ozellik`)
+3. Değişikliklerinizi commit'leyin (`git commit -m 'Yeni özellik eklendi'`)
+4. Branch'inizi push'layın (`git push origin yeni-ozellik`)
+5. Pull Request açın
+
+### Geliştirme
+
+```bash
+git clone https://github.com/ewgsta/animely.git
+cd animely
+pnpm install
+pnpm start
+```
+
+## Destek
+
+- **Bug Report:** [GitHub Issues](https://github.com/ewgsta/animely/issues)
+- **Özellik İsteği:** [GitHub Issues](https://github.com/ewgsta/animely/issues)
+
 ## Lisans
 
-[CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) - Ticari olmayan kullanım, değişiklik yapılamaz.
+Bu proje [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/) lisansı ile lisanslanmıştır.
+
+Bu lisans altında:
+- **Paylaş:** Eseri her ortam veya formatta kopyalayabilir ve yeniden dağıtabilirsiniz.
+- **Atıf:** Uygun referans vermeli, lisansa bağlantı sağlamalı ve değişiklik yapıldıysa bilgi vermelisiniz.
+- **Ticari Olmayan:** Bu materyali ticari amaçlarla kullanamazsınız.
+- **Türetilemez:** Eğer materyali karıştırır, aktarır veya üzerine inşa ederseniz, değiştirilmiş materyali dağıtamazsınız.
