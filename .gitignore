@@ -2,8 +2,10 @@
 node_modules/
 package-lock.json
 
+# AUR
+aur-animely/
+
 # Animely Helper
-docs/
 animely-telemetry/
 src/telemetry/index.js.dev.js
 

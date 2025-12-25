@@ -1,40 +1,35 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/ewgsta/animely/main/docs/img/phee.png" alt="Animely Logo" width="200">
-</div>
 
-**Animely, terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI aracıdır.**
+
+  **Terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI aracı.**
+  
+  [![npm version](https://img.shields.io/npm/v/animely.svg)](https://www.npmjs.com/package/animely)
+  [![AUR version](https://img.shields.io/aur/version/animely)](https://aur.archlinux.org/packages/animely)
+  [![License](https://img.shields.io/badge/license-CC%20BY--NC--ND%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
+</div>
 
 ## Özellikler
 
-*   **Çoklu Kaynak Desteği:** Animely.net ve Animecix.tv kaynaklarından anime izleyebilirsiniz.
-*   **Anında İzleme:** İndirmeyi beklemeden, doğrudan **VLC Media Player** veya **MPV Player** üzerinden yayın akışı (streaming) yapın.
-*   **Kaldığı Yerden Devam:** MPV Player ile izlerken kaldığınız dakikayı otomatik hatırlar ve devam etmenizi önerir.
-*   **Kalite Seçimi:** Animecix kaynağında 480p, 720p ve 1080p kalite seçenekleri.
-*   **Anilist Entegrasyonu:** İzlediğiniz animeleri Anilist hesabınıza otomatik olarak ekleyin!
-*   **Discord Rich Presence (RPC):** Anime izlerken veya menüde gezerken Discord profilinizde ne yaptığınız otomatik olarak gözükür.
-*   **Akıllı İndirme Yöneticisi:**
-    *   **Kaldığı Yerden Devam Etme:** İnternetiniz kesilse veya program kapansa bile indirmeler kaldığı yerden devam eder.
-    *   **Kalıcı Kuyruk:** İndirme kuyruğunuz kaydedilir, programı yeniden başlattığınızda işlemleriniz kaybolmaz.
-    *   **Detaylı İstatistikler:** İndirme sırasında anlık hız, indirilen boyut, toplam boyut ve kalan süre (ETA) bilgilerini görün.
-*   **Esnek Seçim:** İster tek bir bölümü, ister bir aralığı (örn: 1-12), isterseniz de tüm sezonu tek seferde indirin.
-*   **Otomatik Güncelleme:** Yeni bir sürüm çıktığında sizi uyarır ve otomatik olarak günceller.
-*   **Gelişmiş Arama:** Animely kaynağında fuzzy search ile anime ismini yazın, en iyi eşleşmeleri anında bulun.
-*   **Hızlandırıcı (Aria2):** Desteklenen indirmelerde `aria2c` motorunu kullanarak (16x bağlantı ile) indirmeleri çok daha hızlı yapın.
-*   **Kullanıcı Dostu Arayüz:** Renkli, anlaşılır, Türkçe ve etkileşimli menüler.
+- **Çoklu Kaynak Desteği:** Animely.net ve Animecix.tv kaynaklarından anime izleyebilirsiniz
+- **Anında İzleme:** VLC veya MPV ile doğrudan streaming
+- **Kaldığı Yerden Devam:** MPV ile izlerken kaldığınız dakikayı otomatik hatırlar
+- **Kalite Seçimi:** Animecix'te 480p/720p/1080p seçenekleri
+- **Anilist Entegrasyonu:** İzlediğiniz animeleri otomatik olarak Anilist'e ekleyin
+- **Discord Rich Presence:** Ne izlediğiniz Discord profilinizde görünsün
+- **Akıllı İndirme:** Kaldığı yerden devam, kuyruk sistemi, eşzamanlı indirme
+- **Aria2 Desteği:** 16x bağlantı ile hızlı indirme
+- **Son İzlenen İşaretleme:** Bölüm listesinde son izlediğiniz ve sıradaki bölüm işaretli
 
 ## Görseller
 
-### Menü
-![menü](https://r2.fakecrime.bio/uploads/10b1f77e-f967-45bf-9a74-e4c539c52dfe.png)
+| Menü | Ayarlar |
+|------|---------|
+| ![menü](https://r2.fakecrime.bio/uploads/10b1f77e-f967-45bf-9a74-e4c539c52dfe.png) | ![ayarlar](https://r2.fakecrime.bio/uploads/6a01a11a-309c-4d3a-8d40-04ed81e4476b.png) |
 
-### Ayarlar
-![ayarlar](https://r2.fakecrime.bio/uploads/6a01a11a-309c-4d3a-8d40-04ed81e4476b.png)
-
-### Arama
-![arama](https://r2.fakecrime.bio/uploads/95ff108b-dc25-44a2-a51a-1457b35ce99c.png)
-
-### Anime 
-![anime kısımı](https://r2.fakecrime.bio/uploads/4f92ad64-056e-4661-bc3a-d7e9def1793f.png)
+| Arama | Anime |
+|-------|-------|
+| ![arama](https://r2.fakecrime.bio/uploads/95ff108b-dc25-44a2-a51a-1457b35ce99c.png) | ![anime](https://r2.fakecrime.bio/uploads/4f92ad64-056e-4661-bc3a-d7e9def1793f.png) |
 
 ## Desteklenen Kaynaklar
 
@@ -45,45 +40,43 @@
 
 ## Kurulum
 
-Animely'i kullanmak için bilgisayarınızda [Node.js](https://nodejs.org/) yüklü olmalıdır.
-
-Terminalinizi açın ve aşağıdaki komutu çalıştırın:
+### npm (Tüm platformlar)
 
 ```bash
 npm install -g animely
 ```
 
-## Kullanım
+### Arch Linux (AUR)
 
-Kurulum tamamlandıktan sonra, terminale sadece şunu yazmanız yeterli:
+```bash
+yay -S animely
+# veya
+paru -S animely
+```
+
+### Gereksinimler
+
+- **Node.js** v18+ 
+- **Video Oynatıcı:** MPV (önerilen) veya VLC
+
+## Kullanım
 
 ```bash
 animely
 ```
 
-İlk açılışta varsayılan video oynatıcınızı (VLC veya MPV) seçmeniz istenecektir.
 
 ## Ayarlar
 
 Ana menüden "Ayarlar" seçeneğine giderek:
-*   **Anime kaynağını** değiştirebilirsiniz (Animely veya Animecix).
-*   Varsayılan video oynatıcısını değiştirebilirsiniz.
-*   Eşzamanlı indirme sayısını değiştirebilirsiniz.
-*   İndirme klasörünü özelleştirebilirsiniz.
+- Anime kaynağını değiştirebilirsiniz
+- Video oynatıcısını seçebilirsiniz
+- Eşzamanlı indirme sayısını ayarlayabilirsiniz
+- İndirme klasörünü özelleştirebilirsiniz
+- Anilist hesabınızı bağlayabilirsiniz
 
-&gt; **Not:** Ayarlar ve indirme kuyruğu dosyanız, kullanıcı ana dizininizde (`~/.animely/`) güvenli bir şekilde saklanır.
-
-## Gereksinimler
-
-*   **Node.js:** Çalıştırma ortamı (v18+ önerilir).
-*   **Video Oynatıcı:** "İzle" özelliği için **MPV Player** (önerilen) veya **VLC Media Player** gereklidir. MPV, kaldığı yerden devam özelliğini destekler.
+> Ayarlar `~/.animely/` klasöründe saklanır.
 
 ## Lisans
 
-Bu proje [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/) lisansı ile lisanslanmıştır.
-
-Bu lisans altında:
-*   **Paylaş:** Eseri her ortam veya formatta kopyalayabilir ve yeniden dağıtabilirsiniz.
-*   **Atıf:** Uygun referans vermeli, lisansa bağlantı sağlamalı ve değişiklik yapıldıysa bilgi vermelisiniz.
-*   **Ticari Olmayan:** Bu materyali ticari amaçlarla kullanamazsınız.
-*   **Türetilemez:** Eğer materyali karıştırır, aktarır veya üzerine inşa ederseniz, değiştirilmiş materyali dağıtamazsınız.
+[CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) - Ticari olmayan kullanım, değişiklik yapılamaz.
