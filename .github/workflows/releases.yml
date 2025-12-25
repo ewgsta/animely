@@ -1,0 +1,39 @@
+name: NPM Publish & GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*'   
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Kodu çek
+        uses: actions/checkout@v4
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Paketleri yükle
+        run: npm ci
+
+      - name: Paketi npm'ye yayınla
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: .tar.gz dosyasını hazırla
+        run: npm pack
+
+      - name: GitHub Release oluştur ve .tar.gz ekle
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "*.tgz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: false
+          prerelease: false

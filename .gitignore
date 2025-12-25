@@ -3,6 +3,7 @@ node_modules/
 package-lock.json
 
 # Animely Helper
+docs/
 animely-telemetry/
 src/telemetry/index.js.dev.js
 
