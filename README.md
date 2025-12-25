@@ -2,7 +2,6 @@
   <img src="https://raw.githubusercontent.com/ewgsta/animely/main/docs/img/phee.png" alt="Animely-chan" width="200">
 </div>
 
-  **Terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI aracı.**
   
 <p align="center">
   <a href="https://www.npmjs.com/package/animely">
@@ -14,6 +13,8 @@
   <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
     <img src="https://img.shields.io/badge/license-CC%20BY--NC--ND%204.0-blue.svg" alt="License">
   </a>
+
+  <strong>Terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI aracı.</strong>
 </p>
 
 ## Özellikler
