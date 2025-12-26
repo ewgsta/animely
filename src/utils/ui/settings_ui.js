@@ -1,5 +1,6 @@
 import inquirer from "inquirer";
 import chalk from "chalk";
+import fs from "fs";
 import { getConfig, saveConfig } from "../storage/config.js";
 import { successBox } from "./box.js";
 import { authenticate, verifyToken } from "../anilist.js";
@@ -7,12 +8,15 @@ import { spinner } from "../spinner.js";
 import { commandExists, installPackage } from "../system.js";
 import { sources } from "../../sources/index.js";
 
+const pkg = JSON.parse(fs.readFileSync(new URL("./../../../package.json", import.meta.url), "utf-8"));
+
 export async function showSettings() {
     const config = getConfig();
     const currentSource = sources.find(s => s.id === config.defaultSource) || sources[0];
 
     console.clear();
-    console.log(chalk.bgCyan.black(` Ayarlar `));
+    console.log(chalk.bgCyan.black(` Ayarlar `) + chalk.gray(` v${pkg.version}`));
+    console.log();
 
     const { action } = await inquirer.prompt([{
         type: "list",

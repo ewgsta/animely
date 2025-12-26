@@ -38,7 +38,7 @@ export async function showHistory() {
 
     if (type === "completed") {
         console.clear();
-        console.log(chalk.bgGreen.black(` ✓ Tamamlanan Animeler `));
+        console.log(chalk.bgGreen.black(` Tamamlanan Animeler `));
         console.log("");
 
         if (completed.length === 0) {
