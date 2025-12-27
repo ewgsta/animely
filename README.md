@@ -2,11 +2,20 @@
   <img src="https://raw.githubusercontent.com/ewgsta/animely/main/docs/img/phee.png" alt="Animely-chan" width="200">
 </div>
 
-  **Terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI aracı.**
   
-  [![npm version](https://img.shields.io/npm/v/animely.svg)](https://www.npmjs.com/package/animely)
-  [![AUR version](https://img.shields.io/aur/version/animely)](https://aur.archlinux.org/packages/animely)
-  [![License](https://img.shields.io/badge/license-CC%20BY--NC--ND%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
+<p align="center">
+  <a href="https://www.npmjs.com/package/animely">
+    <img src="https://img.shields.io/npm/v/animely.svg" alt="npm version">
+  </a>
+  <a href="https://aur.archlinux.org/packages/animely">
+    <img src="https://img.shields.io/aur/version/animely" alt="AUR version">
+  </a>
+  <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
+    <img src="https://img.shields.io/badge/license-CC%20BY--NC--ND%204.0-blue.svg" alt="License">
+  </a>
+
+  <strong>Terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI aracı.</strong>
+</p>
 
 
 ## Özellikler
