@@ -8,6 +8,7 @@
   [![AUR version](https://img.shields.io/aur/version/animely)](https://aur.archlinux.org/packages/animely)
   [![License](https://img.shields.io/badge/license-CC%20BY--NC--ND%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 
+
 ## Özellikler
 
 - **Çoklu Kaynak Desteği:** Animely.net ve Animecix.tv kaynaklarından anime izleyebilirsiniz
@@ -53,10 +54,27 @@ yay -S animely
 paru -S animely
 ```
 
+##  Web Versiyonu
+
+iOS ve Android cihazlarda web üzerinden de kolaycab kullanabilirsiniz: 
+
+| Animely | Web |
+|-------|-------|
+| ![animely](https://r2.fakecrime.bio/uploads/fe9a4785-77da-4203-ad22-74cb6b171aec.png) | ![web](https://r2.fakecrime.bio/uploads/97391eca-3ab0-483d-86e6-0d199be45bde.png) |
+
+**[animely.ewgsta.me](https://animely.ewgsta.me)**
+
+
+
 ### Gereksinimler
 
+#### CLI
 - **Node.js** v18+ 
 - **Video Oynatıcı:** MPV (önerilen) veya VLC
+
+#### Web
+- **Discord hesabı**
+- **İnternet :D**
 
 ## Kullanım
 
