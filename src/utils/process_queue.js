@@ -10,6 +10,7 @@ import { spinner } from "./spinner.js";
 import { ProgressBar } from "./download/progress.js";
 import { EstSpeed, EP_SIZE } from "../constants.js";
 import notifier from "node-notifier";
+import { t } from "../i18n/index.js";
 
 /**
  * @param {import("./storage/queue.js").QueueItem[]} queue
@@ -20,20 +21,20 @@ export async function processQueue(queue) {
     const estimatedSizeMB = totalEpisodes * EP_SIZE;
     const estimatedSizeGB = (estimatedSizeMB / 1024).toFixed(2);
 
-    console.log(chalk.green(`\nİndirme Kuyruğu`));
-    console.log(chalk.gray(`Toplam Bölüm: ${totalEpisodes}`));
-    console.log(chalk.gray(`Tahmini Boyut: ~${estimatedSizeGB} GB`));
+    console.log(chalk.green(`\n${t("queue.title")}`));
+    console.log(chalk.gray(t("queue.totalEpisodes", { count: totalEpisodes })));
+    console.log(chalk.gray(t("queue.estimatedSize", { size: estimatedSizeGB })));
 
     if (EstSpeed) {
         const estimatedSeconds = estimatedSizeMB / (EstSpeed / 8);
         const estimatedMinutes = Math.ceil(estimatedSeconds / 60);
-        console.log(chalk.gray(`Tahmini Süre: ~${estimatedMinutes} dk (${EstSpeed} Mbps ile)`));
+        console.log(chalk.gray(t("queue.estimatedTime", { minutes: estimatedMinutes, speed: EstSpeed })));
     }
 
     const { confirm } = await inquirer.prompt([{
         type: "confirm",
         name: "confirm",
-        message: "İndirme işlemini başlatmak istiyor musunuz?",
+        message: t("queue.confirmStart"),
         default: true
     }]);
 
@@ -48,7 +49,7 @@ export async function processQueue(queue) {
         }
     });
 
-    console.log(chalk.cyan(`\n${totalEpisodes} bölüm indirilecek. Eşzamanlı indirme limiti: ${config.maxConcurrent}`));
+    console.log(chalk.cyan(`\n${t("queue.downloading", { count: totalEpisodes, limit: config.maxConcurrent })}`));
 
     const progressUI = new ProgressBar();
 
@@ -56,7 +57,7 @@ export async function processQueue(queue) {
         const key = `${item.safeAnimeName}-${item.episode.episode_number}`;
         progressUI.update(key, {
             name: `${item.animeName} - ${item.episode.episode_number}`,
-            status: 'Bekliyor',
+            status: t("progress.waiting"),
             percent: 0
         });
     });
@@ -70,18 +71,18 @@ export async function processQueue(queue) {
         const downloadPath = path.join(item.dirPath, `${item.safeAnimeName} - ${item.episode.episode_number}`);
 
         if (!item.episode.link) {
-            progressUI.update(key, { status: 'Hata', percent: 0 });
+            progressUI.update(key, { status: t("progress.error"), percent: 0 });
             return;
         }
 
         try {
-            progressUI.update(key, { status: 'İndiriliyor', percent: 0 });
+            progressUI.update(key, { status: t("progress.downloading"), percent: 0 });
 
             await dl(item.episode.link, downloadPath, {
                 silent: true,
                 onProgress: (data) => {
                     progressUI.update(key, {
-                        status: 'İndiriliyor',
+                        status: t("progress.downloading"),
                         percent: data.percent,
                         speed: data.speed,
                         eta: data.eta,
@@ -94,7 +95,7 @@ export async function processQueue(queue) {
                 delay: config.retryDelay || 3000
             });
 
-            progressUI.update(key, { status: 'Tamamlandı', percent: 100 });
+            progressUI.update(key, { status: t("progress.completed"), percent: 100 });
 
             const index = queue.indexOf(item);
             if (index > -1) {
@@ -102,17 +103,17 @@ export async function processQueue(queue) {
                 saveQueue(queue);
             }
         } catch (error) {
-            progressUI.update(key, { status: 'Hata', percent: 0 });
+            progressUI.update(key, { status: t("progress.error"), percent: 0 });
         }
     });
 
     await batch(tasks, config.maxConcurrent);
     progressUI.clear();
-    spinner.succeed(chalk.bold("Tüm indirmeler tamamlandı."));
+    spinner.succeed(chalk.bold(t("queue.allComplete")));
 
     notifier.notify({
         title: 'Animely',
-        message: 'İndirme işlemi tamamlandı.',
+        message: t("queue.notificationComplete"),
         sound: true
     });
 

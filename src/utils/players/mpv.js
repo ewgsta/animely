@@ -5,6 +5,7 @@ import os from "os";
 import path from "path";
 import net from "net";
 import chalk from "chalk";
+import { t } from "../../i18n/index.js";
 
 const isWindows = os.platform() === "win32";
 
@@ -51,27 +52,27 @@ export async function installMpv() {
 	const platform = os.platform();
 
 	if (platform === "win32") {
-		console.log(chalk.cyan("MPV Player bulunamadı. Winget ile kurulmaya çalışılıyor..."));
+		console.log(chalk.cyan(t("errors.mpvNotFound", { manager: "Winget" })));
 		try {
 			execSync("winget install io.mpv.mpv -e --source winget", { stdio: "inherit" });
-			console.log(chalk.green("MPV başarıyla kuruldu!"));
+			console.log(chalk.green(t("errors.mpvInstalled")));
 			return true;
 		} catch (error) {
-			console.error(chalk.red("MPV kurulumu başarısız oldu. Lütfen manuel olarak kurunuz: https://mpv.io/installation/"));
+			console.error(chalk.red(t("errors.mpvInstallFailed")));
 			return false;
 		}
 	} else if (platform === "darwin") {
-		console.log(chalk.cyan("MPV Player bulunamadı. Homebrew ile kurulmaya çalışılıyor..."));
+		console.log(chalk.cyan(t("errors.mpvNotFound", { manager: "Homebrew" })));
 		try {
 			execSync("brew install mpv", { stdio: "inherit" });
-			console.log(chalk.green("MPV başarıyla kuruldu!"));
+			console.log(chalk.green(t("errors.mpvInstalled")));
 			return true;
 		} catch (error) {
-			console.error(chalk.red("MPV kurulumu başarısız oldu. Lütfen manuel olarak kurunuz veya Homebrew'in yüklü olduğundan emin olun."));
+			console.error(chalk.red(t("errors.mpvInstallFailedMac")));
 			return false;
 		}
 	} else if (platform === "linux") {
-		console.log(chalk.cyan("MPV Player bulunamadı. Paket yöneticisi ile kurulmaya çalışılıyor..."));
+		console.log(chalk.cyan(t("errors.mpvNotFound", { manager: "package manager" })));
 
 		const managers = [
 			{ cmd: "apt-get", install: "sudo apt-get update && sudo apt-get install mpv -y" },
@@ -84,9 +85,9 @@ export async function installMpv() {
 		for (const mgr of managers) {
 			try {
 				execSync(`which ${mgr.cmd}`, { stdio: "ignore" });
-				console.log(chalk.yellow(`${mgr.cmd} tespit edildi. Kurulum başlatılıyor (sudo gerekebilir)...`));
+				console.log(chalk.yellow(t("errors.managerDetected", { manager: mgr.cmd })));
 				execSync(mgr.install, { stdio: "inherit" });
-				console.log(chalk.green("MPV başarıyla kuruldu!"));
+				console.log(chalk.green(t("errors.mpvInstalled")));
 				return true;
 			} catch (e) {
 				continue;
@@ -180,11 +181,11 @@ export async function openInMpv(url, options = {}) {
 		if (installed) {
 			mpvPath = await getMpvPath();
 		} else {
-			throw new Error("MPV Player bulunamadı ve kurulamadı.");
+			throw new Error(t("errors.mpvNotFoundAndFailed"));
 		}
 	}
 
-	if (!mpvPath) throw new Error("MPV Player dosya yolu bulunamadı.");
+	if (!mpvPath) throw new Error(t("errors.mpvPathNotFound"));
 
 	const socketPath = getSocketPath();
 

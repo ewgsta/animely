@@ -5,6 +5,7 @@ import http from "http";
 import { exec } from "child_process";
 import { getConfig } from "./storage/config.js";
 import { ANILIST_ID, AUTH_URL } from "../constants.js";
+import { t } from "../i18n/index.js";
 
 const ANILIST_API = "https://graphql.anilist.co";
 
@@ -105,7 +106,7 @@ export async function updateAnilistProgress(mediaId, progress, completed) {
 		});
 		return true;
 	} catch (error) {
-		console.error(chalk.red("Anilist güncelleme hatası:"), error.response?.data || error.message);
+		console.error(chalk.red(t("anilist.updateError")), error.response?.data || error.message);
 		return false;
 	}
 }
@@ -124,7 +125,7 @@ export function authenticate() {
 				res.end(`
 					<html>
 						<body style="background: #1a1a1a; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh;">
-							<div id="msg">Giriş yapılıyor...</div>
+							<div id="msg">${t("anilist.loggingIn")}</div>
 							<script>
 								const hash = window.location.hash.substring(1);
 								const params = new URLSearchParams(hash);
@@ -135,11 +136,11 @@ export function authenticate() {
 										body: JSON.stringify({ token }),
 										headers: { 'Content-Type': 'application/json' }
 									}).then(() => {
-										document.getElementById('msg').innerText = 'Giriş başarılı! Bu pencereyi kapatabilirsiniz.';
+										document.getElementById('msg').innerText = '${t("anilist.loginSuccessPage")}';
 										window.close();
 									});
 								} else {
-									document.getElementById('msg').innerText = 'Token bulunamadı. Lütfen tekrar deneyin.';
+									document.getElementById('msg').innerText = '${t("anilist.tokenNotFound")}';
 								}
 							</script>
 						</body>
@@ -173,8 +174,8 @@ export function authenticate() {
 
 		server.listen(6677, () => {
 			const authUrl = AUTH_URL;
-			console.log(chalk.cyan("\nTarayıcı açılıyor... Lütfen AniList hesabınızla giriş yapın."));
-			console.log(chalk.gray(`Eğer açılmazsa bu linke tıklayın: ${authUrl}`));
+			console.log(chalk.cyan("\n" + t("anilist.browserOpening")));
+			console.log(chalk.gray(t("anilist.manualLink", { url: authUrl })));
 
 			const start = (process.platform == 'darwin' ? 'open' : process.platform == 'win32' ? 'start' : 'xdg-open');
 			if (process.platform === 'win32') {

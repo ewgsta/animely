@@ -150,7 +150,7 @@ export class AnimecixSource {
 			}
 
 			if (!embedId) {
-				console.log("Embed ID bulunamadı:", finalUrl);
+				console.log("Embed ID not found:", finalUrl);
 				return [];
 			}
 
@@ -175,7 +175,7 @@ export class AnimecixSource {
 				label: item.label
 			}));
 		} catch (e) {
-			console.error("Stream link hatası:", e.message);
+			console.error("Stream link error:", e.message);
 			return [];
 		}
 	}
@@ -202,7 +202,7 @@ export class AnimecixSource {
 				if (streamLinks.length > 0) return streamLinks;
 			}
 		} catch (e) {
-			console.error("Film stream hatası:", e.message);
+			console.error("Movie stream error:", e.message);
 		}
 
 		return [];
@@ -222,7 +222,7 @@ export class AnimecixSource {
 		// Dizi bölümü - _url'i kullan
 		const videoUrl = episodeData._url;
 		if (!videoUrl) {
-			console.log("Episode URL bulunamadı:", episodeData);
+			console.log("Episode URL not found:", episodeData);
 			return [];
 		}
 

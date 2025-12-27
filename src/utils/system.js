@@ -2,6 +2,7 @@
 import { spawnSync, execSync } from "child_process";
 import os from "os";
 import chalk from "chalk";
+import { t } from "../i18n/index.js";
 
 /**
  * @returns {"windows" | "linux" | "macos" | "unknown"}
@@ -103,14 +104,14 @@ export function installPackage(program) {
     const pkg = PACKAGES[program];
 
     if (!pkg) {
-        console.log(chalk.red(`Paket tanımı bulunamadı: ${program}`));
+        console.log(chalk.red(t("errors.packageNotFound", { name: program })));
         return false;
     }
 
     try {
         if (osType === "windows") {
             if (!checkCommand("winget")) {
-                console.log(chalk.red("Winget paket yöneticisi bulunamadı."));
+                console.log(chalk.red(t("errors.wingetNotFound")));
                 return false;
             }
             spawnSync("winget", ["install", "-e", "--id", pkg.win], { stdio: "inherit" });
@@ -118,7 +119,7 @@ export function installPackage(program) {
 
         } else if (osType === "macos") {
             if (!checkCommand("brew")) {
-                console.log(chalk.red("Homebrew paket yöneticisi bulunamadı."));
+                console.log(chalk.red(t("errors.brewNotFound")));
                 return false;
             }
             const args = ["install", ...pkg.mac.split(" ")];
@@ -134,12 +135,12 @@ export function installPackage(program) {
                 spawnSync("sudo", ["pacman", "-S", "--noconfirm", pkg.linux], { stdio: "inherit" });
                 return true;
             } else {
-                console.log(chalk.red("Desteklenen paket yöneticisi (apt/pacman) bulunamadı."));
+                console.log(chalk.red(t("errors.packageManagerNotFound")));
                 return false;
             }
         }
     } catch (error) {
-        console.error(chalk.red(`Kurulum hatası: ${error.message}`));
+        console.error(chalk.red(t("errors.installError", { message: error.message })));
         return false;
     }
     return false;

@@ -1,5 +1,6 @@
 // @ts-check
 import chalk from "chalk";
+import { t } from "../../i18n/index.js";
 
 /**
  * @returns {number}
@@ -106,8 +107,8 @@ export function banner(title, subtitle, color = "cyan") {
  */
 export function menuHeader(animeName, currentEp, totalEp, resolution) {
     const resText = resolution ? ` (${resolution})` : "";
-    const epText = currentEp > 0 ? ` | ${currentEp}/${totalEp}` : ` | ${totalEp} bölüm`;
-    console.log(chalk.bgYellow.black(` Oynatılıyor `) + ` ${chalk.bold(animeName)}${chalk.gray(resText)}${chalk.yellow(epText)}`);
+    const epText = currentEp > 0 ? ` | ${currentEp}/${totalEp}` : ` | ${t("episodes.episodeCount", { count: totalEp })}`;
+    console.log(chalk.bgYellow.black(` ${t("ui.nowPlaying")} `) + ` ${chalk.bold(animeName)}${chalk.gray(resText)}${chalk.yellow(epText)}`);
 }
 
 /**

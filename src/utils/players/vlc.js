@@ -3,6 +3,7 @@ import { spawn, execSync } from "child_process";
 import fs from "fs";
 import os from "os";
 import chalk from "chalk";
+import { t } from "../../i18n/index.js";
 
 const isWindows = os.platform() === "win32";
 
@@ -44,23 +45,23 @@ export async function installVlc() {
 	const platform = os.platform();
 
 	if (platform === "win32") {
-		console.log(chalk.cyan("VLC Player bulunamadı. Winget ile kurulmaya çalışılıyor..."));
+		console.log(chalk.cyan(t("errors.vlcNotFound", { manager: "Winget" })));
 		try {
 			execSync("winget install VideoLAN.VLC -e --source winget", { stdio: "inherit" });
-			console.log(chalk.green("VLC başarıyla kuruldu!"));
+			console.log(chalk.green(t("errors.vlcInstalled")));
 			return true;
 		} catch (error) {
-			console.error(chalk.red("VLC kurulumu başarısız oldu."));
+			console.error(chalk.red(t("errors.vlcInstallFailed")));
 			return false;
 		}
 	} else if (platform === "darwin") {
-		console.log(chalk.cyan("VLC Player bulunamadı. Homebrew ile kurulmaya çalışılıyor..."));
+		console.log(chalk.cyan(t("errors.vlcNotFound", { manager: "Homebrew" })));
 		try {
 			execSync("brew install --cask vlc", { stdio: "inherit" });
-			console.log(chalk.green("VLC başarıyla kuruldu!"));
+			console.log(chalk.green(t("errors.vlcInstalled")));
 			return true;
 		} catch (error) {
-			console.error(chalk.red("VLC kurulumu başarısız oldu."));
+			console.error(chalk.red(t("errors.vlcInstallFailed")));
 			return false;
 		}
 	} else if (platform === "linux") {
@@ -74,7 +75,7 @@ export async function installVlc() {
 			try {
 				execSync(`which ${mgr.cmd}`, { stdio: "ignore" });
 				execSync(mgr.install, { stdio: "inherit" });
-				console.log(chalk.green("VLC başarıyla kuruldu!"));
+				console.log(chalk.green(t("errors.vlcInstalled")));
 				return true;
 			} catch (e) {
 				continue;
@@ -100,13 +101,13 @@ export async function openInVlc(url, options = {}) {
 		if (installed) {
 			vlcPath = await getVlcPath();
 		} else {
-			throw new Error("VLC Player bulunamadı ve kurulamadı.");
+			throw new Error(t("errors.vlcNotFoundAndFailed"));
 		}
 	}
 
-	if (!vlcPath) throw new Error("VLC dosya yolu bulunamadı.");
+	if (!vlcPath) throw new Error(t("errors.vlcPathNotFound"));
 
-	console.log(chalk.cyan("VLC başlatılıyor..."));
+	console.log(chalk.cyan(t("errors.vlcStarting")));
 
 	return new Promise((resolve, reject) => {
 		const child = spawn(vlcPath, ["--fullscreen", url], {

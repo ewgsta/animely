@@ -9,6 +9,7 @@ import ffmpeg from "fluent-ffmpeg";
 import ffmpegPath from "ffmpeg-static";
 import { spawn } from "child_process";
 import { getConfig } from "../storage/config.js";
+import { t } from "../../i18n/index.js";
 
 // @ts-ignore
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -21,7 +22,7 @@ ffmpeg.setFfmpegPath(ffmpegPath);
  */
 export async function download(url, outputPath, options = { silent: false }) {
 	if (!url || typeof url !== "string") {
-		throw new Error("gecersiz url");
+		throw new Error(t("errors.invalidUrl"));
 	}
 
 	if (url.includes(".m3u8")) {
@@ -51,13 +52,13 @@ export async function download(url, outputPath, options = { silent: false }) {
 		if (fs.existsSync(outputPath + ".mp4")) {
 			const existingStats = fs.statSync(outputPath + ".mp4");
 			if (existingStats.size > 0) {
-				if (!options.silent) console.log(chalk.green(`Dosya zaten indirilmiş (Aria2): ${outputPath}.mp4`));
+				if (!options.silent) console.log(chalk.green(t("errors.fileExistsAria2", { path: outputPath + ".mp4" })));
 				if (options.onProgress) options.onProgress({ percent: "100", downloaded: existingStats.size, total: existingStats.size, speed: 0, eta: 0 });
 				return;
 			}
 		}
 
-		if (!options.silent) console.log(chalk.cyan("\nAria2 indirme yöneticisi başlatılıyor..."));
+		if (!options.silent) console.log(chalk.cyan("\n" + t("errors.aria2Starting")));
 
 		return new Promise((resolve, reject) => {
 			const aria2 = spawn("aria2c", [
@@ -86,7 +87,7 @@ export async function download(url, outputPath, options = { silent: false }) {
 						const barLength = 30;
 						const filledLength = Math.floor((parseInt(percent) / 100) * barLength);
 						const progressBar = "█".repeat(filledLength) + "░".repeat(barLength - filledLength);
-						const out = `[${progressBar}] ${percent}% - Hız: ${speedRaw}`;
+						const out = t("progress.aria2Progress", { bar: progressBar, percent, speed: speedRaw });
 						process.stdout.clearLine(0);
 						process.stdout.cursorTo(0);
 						process.stdout.write(chalk.gray(out));
@@ -98,16 +99,16 @@ export async function download(url, outputPath, options = { silent: false }) {
 				if (code === 0) {
 					if (!options.silent) {
 						process.stdout.write("\n");
-						console.log(chalk.green(`İndirme tamamlandı: ${outputPath}.mp4`));
+						console.log(chalk.green(t("errors.downloadCompleted", { path: outputPath + ".mp4" })));
 					}
 					resolve();
 				} else {
-					reject(new Error(`Aria2c hata kodu ile kapandı: ${code}`));
+					reject(new Error(t("errors.aria2Error", { code })));
 				}
 			});
 
 			aria2.on("error", (err) => {
-				reject(new Error(`Aria2c başlatılamadı: ${err.message}`));
+				reject(new Error(t("errors.aria2StartFailed", { message: err.message })));
 			});
 		});
 	}
@@ -130,14 +131,14 @@ export async function download(url, outputPath, options = { silent: false }) {
 				const existingSize = stats.size;
 
 				if (totalLength > 0 && existingSize === totalLength) {
-					if (!options.silent) console.log(chalk.green(`Dosya zaten indirilmiş: ${fullPath}`));
+					if (!options.silent) console.log(chalk.green(t("errors.fileExists", { path: fullPath })));
 					if (options.onProgress) options.onProgress({ percent: "100", downloaded: totalLength, total: totalLength, speed: 0, eta: 0 });
 					return;
 				}
 
 				if (totalLength > 0 && existingSize < totalLength) {
 					startByte = existingSize;
-					if (!options.silent) console.log(chalk.yellow(`İndirme devam ettiriliyor: ${bytes(startByte)} / ${bytes(totalLength)}`));
+					if (!options.silent) console.log(chalk.yellow(t("errors.resumingDownload", { downloaded: bytes(startByte), total: bytes(totalLength) })));
 				}
 			}
 		}
@@ -160,15 +161,15 @@ export async function download(url, outputPath, options = { silent: false }) {
 		});
 	} catch (error) {
 		if (error.code === "ENOTFOUND") {
-			throw new Error("İnternet bağlantısı bulunamadı.");
+			throw new Error(t("errors.noInternet"));
 		} else if (error.code === "ECONNABORTED") {
-			throw new Error("Bağlantı zaman aşımına uğradı.");
+			throw new Error(t("errors.timeout"));
 		}
-		throw new Error(`İndirme başlatılamadı: ${error.message}`);
+		throw new Error(t("errors.downloadFailed", { message: error.message }));
 	}
 
 	if (response.status !== 200 && response.status !== 206) {
-		throw new Error(`Sunucu hatası: ${response.status} ${response.statusText}`);
+		throw new Error(t("errors.serverError", { status: response.status, statusText: response.statusText }));
 	}
 
 
@@ -205,24 +206,26 @@ export async function download(url, outputPath, options = { silent: false }) {
 	let lastTime = Date.now();
 
 	if (!options.silent) {
-		if (!isResuming) console.log(chalk.cyan("\nİndirme başlıyor..."));
+		if (!isResuming) console.log(chalk.cyan("\n" + t("progress.downloadStarting")));
 
 		if (totalLength) {
 			const percent = ((downloaded / totalLength) * 100).toFixed(1);
+			const msg = t("progress.downloadingPercent", { percent, downloaded: bytes(downloaded), total: bytes(totalLength) });
 			if (process.stdout.isTTY) {
 				process.stdout.clearLine(0);
 				process.stdout.cursorTo(0);
-				process.stdout.write(chalk.gray(`İndiriliyor: ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)})`));
+				process.stdout.write(chalk.gray(msg));
 			} else {
-				process.stdout.write(chalk.gray(`\rİndiriliyor: ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)})`));
+				process.stdout.write(chalk.gray(`\r${msg}`));
 			}
 		} else {
+			const msg = t("progress.uploading", { downloaded: bytes(downloaded) });
 			if (process.stdout.isTTY) {
 				process.stdout.clearLine(0);
 				process.stdout.cursorTo(0);
-				process.stdout.write(chalk.gray(`Yükleniyor: ${bytes(downloaded)}`));
+				process.stdout.write(chalk.gray(msg));
 			} else {
-				process.stdout.write(chalk.gray(`\rYükleniyor: ${bytes(downloaded)}`));
+				process.stdout.write(chalk.gray(`\r${msg}`));
 			}
 		}
 	}
@@ -257,9 +260,9 @@ export async function download(url, outputPath, options = { silent: false }) {
 					const h = Math.floor(eta / 3600);
 					const m = Math.floor((eta % 3600) / 60);
 					const s = eta % 60;
-					const etaStr = h > 0 ? `${h}s ${m}dk ${s}sn` : m > 0 ? `${m}dk ${s}sn` : `${s}sn`;
+					const etaStr = h > 0 ? `${h}h ${m}m ${s}s` : m > 0 ? `${m}m ${s}s` : `${s}s`;
 
-					const output = `[${progressBar}] ${percent}% (${bytes(downloaded)} / ${bytes(totalLength)}) - ${bytes(speed)}/s - Kalan: ${etaStr}`;
+					const output = t("progress.progressBar", { bar: progressBar, percent, downloaded: bytes(downloaded), total: bytes(totalLength), speed: bytes(speed), eta: etaStr });
 					process.stdout.write(`\x1b[2K\x1b[0G${chalk.gray(output)}`);
 				}
 			} else {
@@ -268,7 +271,7 @@ export async function download(url, outputPath, options = { silent: false }) {
 				}
 
 				if (!options.silent) {
-					const output = `Yükleniyor: ${bytes(downloaded)} - ${bytes(speed)}/s`;
+					const output = t("progress.uploadingSpeed", { downloaded: bytes(downloaded), speed: bytes(speed) });
 					process.stdout.write(`\x1b[2K\x1b[0G${chalk.gray(output)}`);
 				}
 			}
@@ -281,13 +284,13 @@ export async function download(url, outputPath, options = { silent: false }) {
 
 		if (!options.silent) {
 			process.stdout.write("\n");
-			console.log(chalk.green(`Dosya başarıyla kaydedildi: ${fullPath}`));
+			console.log(chalk.green(t("errors.fileSaved", { path: fullPath })));
 		}
 	} catch (error) {
 		if (!isResuming && fs.existsSync(fullPath)) {
 			fs.unlinkSync(fullPath);
 		}
-		throw new Error(`Dosya yazma hatası: ${error.message}`);
+		throw new Error(t("errors.fileWriteError", { message: error.message }));
 	}
 }
 
@@ -302,17 +305,17 @@ async function downloadM3U8(url, outputPath, options = { silent: false }) {
 	const fullPath = `${outputPath}.mp4`;
 
 	if (fs.existsSync(fullPath)) {
-		if (!options.silent) console.log(chalk.green(`Dosya zaten indirilmiş (M3U8): ${fullPath}`));
+		if (!options.silent) console.log(chalk.green(t("errors.fileExistsM3U8", { path: fullPath })));
 		if (options.onProgress) options.onProgress({ percent: "100", downloaded: 0, total: 0, speed: 0, eta: 0 });
 		return;
 	}
 
-	if (!options.silent) console.log(chalk.cyan("\nM3U8 indiriliyor ve işleniyor (Bu işlem biraz zaman alabilir)..."));
+	if (!options.silent) console.log(chalk.cyan("\n" + t("errors.m3u8Processing")));
 
 	return new Promise((resolve, reject) => {
 		ffmpeg(url)
 			.on('error', (err) => {
-				reject(new Error(`FFmpeg hatası: ${err.message}`));
+				reject(new Error(t("errors.ffmpegError", { message: err.message })));
 			})
 			.on('progress', (progress) => {
 				const percent = progress.percent ? progress.percent.toFixed(1) : "0";
@@ -323,7 +326,7 @@ async function downloadM3U8(url, outputPath, options = { silent: false }) {
 				}
 
 				if (!options.silent) {
-					const output = `İşleniyor: ${percent}% (${bytes(downloadedBytes)})`;
+					const output = t("progress.processingPercent", { percent, downloaded: bytes(downloadedBytes) });
 					process.stdout.clearLine(0);
 					process.stdout.cursorTo(0);
 					process.stdout.write(`\x1b[2K\x1b[0G${chalk.gray(output)}`);
@@ -332,7 +335,7 @@ async function downloadM3U8(url, outputPath, options = { silent: false }) {
 			.on('end', () => {
 				if (!options.silent) {
 					process.stdout.write("\n");
-					console.log(chalk.green(`Dosya başarıyla kaydedildi: ${fullPath}`));
+					console.log(chalk.green(t("errors.fileSaved", { path: fullPath })));
 				}
 				resolve();
 			})
@@ -359,7 +362,7 @@ export async function dl(url, outputPath, options, retryOptions = { count: 3, de
 			if (attempt > retryOptions.count) throw error;
 
 			if (!options?.silent) {
-				console.log(chalk.yellow(`\nTekrar deneniyor (${attempt}/${retryOptions.count})...`));
+				console.log(chalk.yellow("\n" + t("errors.retrying", { attempt, total: retryOptions.count })));
 			}
 			await new Promise(resolve => setTimeout(resolve, retryOptions.delay));
 		}

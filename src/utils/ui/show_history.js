@@ -2,6 +2,7 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import { loadHistory } from "../storage/history.js";
 import { stats } from "./stats.js";
+import { t } from "../../i18n/index.js";
 
 export async function showHistory() {
     const history = loadHistory();
@@ -11,20 +12,20 @@ export async function showHistory() {
     const inProgress = items.filter(i => !i.completed);
 
     console.clear();
-    console.log(chalk.bgMagenta.black(` İzleme Geçmişi `));
+    console.log(chalk.bgMagenta.black(` ${t("history.title")} `));
     console.log("");
 
     const { type } = await inquirer.prompt([{
         type: "list",
         name: "type",
-        message: "Hangi listeyi görüntülemek istersiniz?",
+        message: t("history.selectList"),
         loop: false,
         choices: [
-            { name: "İstatistikler", value: "stats" },
-            { name: `Devam Edenler (${inProgress.length})`, value: "progress" },
-            { name: `Tamamlananlar (${completed.length})`, value: "completed" },
+            { name: t("history.statistics"), value: "stats" },
+            { name: t("history.inProgress", { count: inProgress.length }), value: "progress" },
+            { name: t("history.completed", { count: completed.length }), value: "completed" },
             new inquirer.Separator(),
-            { name: "Geri Dön", value: "back" }
+            { name: t("history.goBack"), value: "back" }
         ]
     }]);
 
@@ -38,11 +39,11 @@ export async function showHistory() {
 
     if (type === "completed") {
         console.clear();
-        console.log(chalk.bgGreen.black(` Tamamlanan Animeler `));
+        console.log(chalk.bgGreen.black(` ${t("history.completedTitle")} `));
         console.log("");
 
         if (completed.length === 0) {
-            console.log(chalk.yellow("  Henüz tamamlanmış bir anime yok."));
+            console.log(chalk.yellow("  " + t("history.noCompleted")));
         } else {
             completed.forEach(anime => {
                 console.log(`  ${chalk.cyan("●")} ${chalk.white(anime.name)} ${chalk.gray(`- ${new Date(anime.lastWatchedAt).toLocaleDateString()}`)}`);
@@ -50,11 +51,11 @@ export async function showHistory() {
         }
         console.log("");
 
-        await inquirer.prompt([{ type: "input", name: "dummy", message: "Geri dönmek için Enter'a basın..." }]);
+        await inquirer.prompt([{ type: "input", name: "dummy", message: t("history.pressEnter") }]);
         await showHistory();
     } else if (type === "progress") {
         if (inProgress.length === 0) {
-            console.log(chalk.yellow("\nHenüz izlenen bir anime yok."));
+            console.log(chalk.yellow("\n" + t("history.noWatching")));
             await new Promise(resolve => setTimeout(resolve, 1500));
             await showHistory();
             return;
@@ -63,15 +64,15 @@ export async function showHistory() {
         const { anime } = await inquirer.prompt([{
             type: "list",
             name: "anime",
-            message: "Detaylarını görmek istediğiniz animeyi seçin:",
+            message: t("history.selectForDetails"),
             loop: false,
             choices: [
                 ...inProgress.map(i => ({
-                    name: `${i.name} ${chalk.gray(`(Son izlenen: ${i.lastEpisode}. Bölüm)`)}`,
+                    name: `${i.name} ${chalk.gray(`(${t("history.lastEpisode", { episode: i.lastEpisode })})`)}`,
                     value: i
                 })),
                 new inquirer.Separator(),
-                { name: "Geri Dön", value: "back" }
+                { name: t("history.goBack"), value: "back" }
             ]
         }]);
 
@@ -81,11 +82,11 @@ export async function showHistory() {
         }
 
         console.log(chalk.cyan(`\n${anime.name}`));
-        console.log(chalk.gray(`Son izlenen bölüm: ${anime.lastEpisode}`));
-        console.log(chalk.gray(`Toplam bölüm: ${anime.totalEpisodes}`));
-        console.log(chalk.gray(`Son izleme tarihi: ${new Date(anime.lastWatchedAt).toLocaleString()}`));
+        console.log(chalk.gray(t("history.lastEpisodeLabel", { episode: anime.lastEpisode })));
+        console.log(chalk.gray(t("history.totalEpisodes", { count: anime.totalEpisodes })));
+        console.log(chalk.gray(t("history.lastWatchedDate", { date: new Date(anime.lastWatchedAt).toLocaleString() })));
 
-        await inquirer.prompt([{ type: "input", name: "dummy", message: "Geri dönmek için Enter'a basın..." }]);
+        await inquirer.prompt([{ type: "input", name: "dummy", message: t("history.pressEnter") }]);
         await showHistory();
     }
 }

@@ -3,7 +3,6 @@ import { spinner } from "./utils/spinner.js";
 import { getConfig, saveConfig } from "./utils/storage/config.js";
 import { loadQueue, saveQueue } from "./utils/storage/queue.js";
 import { initDiscordRpc, setActivity } from "./utils/discord.js";
-import { telemetry } from "./telemetry/index.js";
 import { sources, getSourceById } from "./sources/index.js";
 import { infoBox } from "./utils/ui/box.js";
 
@@ -13,6 +12,7 @@ import { processQueue } from "./utils/process_queue.js";
 import { searchAndDownload } from "./utils/search_download.js";
 import { resumeWatch } from "./utils/resume_watch.js";
 import { loadHistory } from "./utils/storage/history.js";
+import { t, setLanguage } from "./i18n/index.js";
 
 import { execSync, spawnSync } from "child_process";
 import chalk from "chalk";
@@ -22,7 +22,7 @@ import updateNotifier from "update-notifier";
 import { runSpeedTest } from "./utils/speedtest.js";
 
 process.on('SIGINT', () => {
-	console.log(chalk.gray("\ngorusmek uzere!"));
+	console.log(chalk.gray("\n" + t("app.goodbye")));
 	process.exit(0);
 });
 
@@ -36,11 +36,11 @@ const notifier = updateNotifier({
 });
 
 if (notifier.update) {
-	console.log(chalk.yellow(`\nYeni güncelleme mevcut: ${chalk.dim(notifier.update.current)} -> ${chalk.green(notifier.update.latest)}`));
-	console.log(chalk.cyan("Otomatik güncelleme başlatılıyor..."));
+	console.log(chalk.yellow(`\n${t("update.available", { current: notifier.update.current, latest: notifier.update.latest })}`));
+	console.log(chalk.cyan(t("update.starting")));
 	try {
 		execSync("npm install -g animely");
-		console.log(chalk.green("Güncelleme tamamlandı! Uygulama yeniden başlatılıyor..."));
+		console.log(chalk.green(t("update.completed")));
 
 		const { status } = spawnSync(process.argv[0], process.argv.slice(1), {
 			stdio: "inherit"
@@ -48,14 +48,13 @@ if (notifier.update) {
 
 		process.exit(status ?? 0);
 	} catch (e) {
-		console.log(chalk.red("Otomatik güncelleme başarısız oldu."));
-		console.log(chalk.yellow("Lütfen 'npm install -g animely' komutunu elle çalıştırın."));
+		console.log(chalk.red(t("update.failed")));
+		console.log(chalk.yellow(t("update.manualInstall")));
 	}
 }
 
 (async () => {
 	try {
-		await telemetry.init();
 		await initDiscordRpc();
 
 		const speedTestPromise = runSpeedTest();
@@ -63,6 +62,12 @@ if (notifier.update) {
 		spinner.start();
 
 		const config = getConfig();
+		
+		// Dil ayarını yükle
+		if (config.language) {
+			setLanguage(config.language);
+		}
+		
 		const currentSource = getSourceById(config.defaultSource) || sources[0];
 
 		let animes = null;
@@ -74,7 +79,7 @@ if (notifier.update) {
 				]);
 				animes = animesResult;
 			} catch (error) {
-				spinner.fail(chalk.red("Anime listesi alınamadı. İnternet bağlantınızı kontrol edin."));
+				spinner.fail(chalk.red(t("errors.animeListFailed")));
 				return;
 			}
 		} else {
@@ -84,19 +89,39 @@ if (notifier.update) {
 
 		const downloadQueue = loadQueue();
 
+		// İlk kurulum - önce dil seçimi
+		if (!config.language) {
+			console.clear();
+			console.log(chalk.bold.green("Animely'e hoş geldiniz / Welcome to Animely\n"));
+
+			const { language } = await inquirer.prompt([{
+				type: "list",
+				name: "language",
+				message: "Dil seçin / Select language:",
+				choices: [
+					{ name: "Türkçe", value: "tr" },
+					{ name: "English", value: "en" }
+				]
+			}]);
+
+			config.language = language;
+			setLanguage(language);
+			saveConfig(config);
+		}
+
 		if (!config.defaultPlayer) {
 			console.clear();
-			console.log(chalk.bold.green("Animely'e hoş geldiniz. İlk kurulumu tamamlayalım.\n"));
+			console.log(chalk.bold.green(t("setup.welcome") + "\n"));
 
-			console.log(chalk.cyan("Medya oynatıcı yapılandırması:"));
+			console.log(chalk.cyan(t("setup.playerConfig")));
 			const { playerConfirm } = await inquirer.prompt([{
 				type: "list",
 				name: "playerConfirm",
-				message: "Sisteminizde yüklü bir medya oynatıcı (VLC/MPV) var mı?",
+				message: t("setup.playerQuestion"),
 				choices: [
-					{ name: "Evet, var", value: "yes" },
-					{ name: "Hayır, otomatik indir (Winget)", value: "install" },
-					{ name: "Hayır, tarayıcıda aç (VideoLAN.org)", value: "web" }
+					{ name: t("setup.playerYes"), value: "yes" },
+					{ name: t("setup.playerInstall"), value: "install" },
+					{ name: t("setup.playerWeb"), value: "web" }
 				]
 			}]);
 
@@ -104,26 +129,26 @@ if (notifier.update) {
 				const { playerToInstall } = await inquirer.prompt([{
 					type: "list",
 					name: "playerToInstall",
-					message: "Hangi oynatıcıyı kurmak istersiniz?",
+					message: t("setup.playerSelect"),
 					choices: [
-						{ name: "MPV Player (Önerilen)", value: "io.mpv.mpv" },
-						{ name: "VLC Media Player", value: "VideoLAN.VLC" }
+						{ name: t("setup.mpvRecommended"), value: "io.mpv.mpv" },
+						{ name: t("setup.vlcPlayer"), value: "VideoLAN.VLC" }
 					]
 				}]);
 
-				console.log(chalk.yellow(`\n${playerToInstall} kuruluyor, lütfen bekleyin...`));
+				console.log(chalk.yellow(`\n${t("setup.installing", { player: playerToInstall })}`));
 				try {
 					spawnSync("winget", ["install", "-e", "--id", playerToInstall], { stdio: "inherit" });
-					console.log(chalk.green("\nKurulum başarıyla tamamlandı."));
+					console.log(chalk.green("\n" + t("setup.installSuccess")));
 				} catch (e) {
-					console.log(chalk.red("Otomatik kurulum başarısız oldu. Lütfen manuel olarak indirin."));
+					console.log(chalk.red(t("setup.installFailed")));
 				}
 			} else if (playerConfirm === "web") {
 				const start = (process.platform == 'darwin' ? 'open' : process.platform == 'win32' ? 'start' : 'xdg-open');
 				if (process.platform === 'win32') {
 					spawnSync("cmd", ["/c", "start", "https://www.videolan.org/vlc/"], { stdio: 'ignore' });
 				}
-				console.log(chalk.yellow("İndirme sayfası tarayıcıda açıldı. Kurulumu tamamlayıp geri dönün."));
+				console.log(chalk.yellow(t("setup.webOpened")));
 				await new Promise(resolve => setTimeout(resolve, 5000));
 			}
 
@@ -132,30 +157,30 @@ if (notifier.update) {
 			const { player } = await inquirer.prompt([{
 				type: "list",
 				name: "player",
-				message: "Varsayılan oynatıcı olarak hangisi kullanılsın:",
+				message: t("setup.defaultPlayerPrompt"),
 				choices: [
-					{ name: "MPV Player (Önerilen - Kaldığı yerden devam desteği)", value: "mpv" },
-					{ name: "VLC Player", value: "vlc" }
+					{ name: t("setup.mpvWithResume"), value: "mpv" },
+					{ name: t("setup.vlcPlayer"), value: "vlc" }
 				]
 			}]);
 			config.defaultPlayer = player;
 			saveConfig(config);
-			console.log(chalk.green("\nAyarlar kaydedildi, uygulama başlatılıyor..."));
+			console.log(chalk.green("\n" + t("setup.settingsSaved")));
 			await new Promise(resolve => setTimeout(resolve, 2000));
 		}
 
 		while (true) {
 			console.clear();
-			setActivity("Menüde geziniyor");
+			setActivity(t("menu.browsingMenu"));
 
 			const currentConfig = getConfig();
 			const activeSource = getSourceById(currentConfig.defaultSource) || sources[0];
 
-			console.log(chalk.bgCyan.black(` Animely CLI `) + chalk.gray(` v${pkg.version} | ${activeSource.name}`));
+			console.log(chalk.bgCyan.black(` ${t("app.title")} `) + chalk.gray(` v${pkg.version} | ${activeSource.name}`));
 
 			if (downloadQueue.length > 0) {
 				console.log("");
-				infoBox(`Tamamlanmamış ${downloadQueue.length} indirme görevi var!`);
+				infoBox(t("menu.incompleteDownloads", { count: downloadQueue.length }));
 			}
 
 			const history = loadHistory();
@@ -176,37 +201,37 @@ if (notifier.update) {
 			console.log(""); 
 
 			const choices = [
-				{ name: "Anime Ara", value: "search" },
-				{ name: "İzleme Geçmişi", value: "history" },
-				{ name: "Ayarlar", value: "settings" }
+				{ name: t("menu.searchAnime"), value: "search" },
+				{ name: t("menu.watchHistory"), value: "history" },
+				{ name: t("menu.settings"), value: "settings" }
 			];
 
 			if (resumeAnime) {
 				choices.unshift({
-					name: `Devam Et: ${chalk.cyan(resumeAnime.NAME)} ${chalk.gray(`(${nextEpisode}. Bölüm)`)}`,
+					name: t("menu.resume", { name: chalk.cyan(resumeAnime.NAME), episode: nextEpisode }),
 					value: "resume"
 				});
 			}
 
 
 			if (downloadQueue.length > 0) {
-				choices.unshift({ name: `İndirme Kuyruğunu Başlat (${downloadQueue.length} Bölüm)`, value: "start_queue" });
-				choices.unshift({ name: `İndirme Kuyruğunu Temizle`, value: "clear_queue" });
+				choices.unshift({ name: t("menu.startQueue", { count: downloadQueue.length }), value: "start_queue" });
+				choices.unshift({ name: t("menu.clearQueue"), value: "clear_queue" });
 			}
 
 			choices.push(new inquirer.Separator());
-			choices.push({ name: "Çıkış", value: "exit" });
+			choices.push({ name: t("menu.exit"), value: "exit" });
 
 			const { action } = await inquirer.prompt([{
 				type: "list",
 				name: "action",
-				message: "Bir işlem seçin:",
+				message: t("menu.selectAction"),
 				loop: false,
 				choices: choices
 			}]);
 
 			if (action === "exit") {
-				console.log(chalk.gray("Görüşmek üzere!"));
+				console.log(chalk.gray(t("app.goodbye")));
 				process.exit(0);
 			} else if (action === "resume") {
 				await resumeWatch(resumeAnime, nextEpisode);
@@ -220,7 +245,7 @@ if (notifier.update) {
 
 				if (searchSource.supportsLocalSearch && searchSource.getAnimeList) {
 					try {
-						spinner.start("Liste güncelleniyor...");
+						spinner.start(t("spinner.listUpdating"));
 						animes = await searchSource.getAnimeList();
 						spinner.stop();
 					} catch (error) {
@@ -234,14 +259,14 @@ if (notifier.update) {
 				const { confirm } = await inquirer.prompt([{
 					type: "confirm",
 					name: "confirm",
-					message: "İndirme kuyruğunu temizlemek istediğinize emin misiniz?",
+					message: t("queue.confirmClear"),
 					default: false
 				}]);
 
 				if (confirm) {
 					downloadQueue.length = 0;
 					saveQueue(downloadQueue);
-					console.log(chalk.green("İndirme kuyruğu başarıyla temizlendi!"));
+					console.log(chalk.green(t("queue.cleared")));
 					await new Promise(resolve => setTimeout(resolve, 1000));
 				}
 			}
@@ -251,11 +276,10 @@ if (notifier.update) {
 
 	} catch (error) {
 		if (error.message && error.message.includes("User force closed")) {
-			console.log(chalk.gray("\ngorusmek uzere!"));
+			console.log(chalk.gray("\n" + t("app.goodbye")));
 			process.exit(0);
 		}
-		telemetry.error(error, "main_loop");
-		spinner.fail("beklenmeyen bir hata olustu, lutfen daha sonra tekrar deneyiniz.");
-		console.error(chalk.gray(`hata detayi: ${error.message}`));
+		spinner.fail(t("app.unexpectedError"));
+		console.error(chalk.gray(t("app.errorDetail", { message: error.message })));
 	}
 })();

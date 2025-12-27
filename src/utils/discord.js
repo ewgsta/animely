@@ -1,6 +1,7 @@
 // @ts-check
 import RPC from "discord-rpc";
 import { DISCORD_ID, LOGO_URL } from "../constants.js";
+import { t } from "../i18n/index.js";
 
 const clientId = DISCORD_ID;
 let client;
@@ -13,7 +14,7 @@ export async function initDiscordRpc() {
 
 		client.on("ready", () => {
 			isReady = true;
-			setActivity("Menüde geziniyor");
+			setActivity("Browsing menu");
 		});
 
 		await client.login({ clientId }).catch(() => {});
@@ -40,7 +41,7 @@ export function setActivity(details, state) {
 					large_image: LOGO_URL,
 					large_text: "Animely CLI"
 				},
-				buttons: [{ label: "İndir", url: "https://github.com/ewgsta/animely" }]
+				buttons: [{ label: t("discord.download"), url: "https://github.com/ewgsta/animely" }]
 			}
 		}).catch(() => {});
 	} catch {
@@ -73,7 +74,7 @@ export function setWatchingActivity({ animeName, animeImage, episode, totalEpiso
 				small_image: LOGO_URL,
 				small_text: "Animely"
 			},
-			buttons: [{ label: "İndir", url: "https://github.com/ewgsta/animely" }]
+			buttons: [{ label: t("discord.download"), url: "https://github.com/ewgsta/animely" }]
 		};
 
 		client.request("SET_ACTIVITY", {

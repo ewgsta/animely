@@ -7,50 +7,73 @@ import { authenticate, verifyToken } from "../anilist.js";
 import { spinner } from "../spinner.js";
 import { commandExists, installPackage } from "../system.js";
 import { sources } from "../../sources/index.js";
+import { t, setLanguage } from "../../i18n/index.js";
 
 const pkg = JSON.parse(fs.readFileSync(new URL("./../../../package.json", import.meta.url), "utf-8"));
 
 export async function showSettings() {
     const config = getConfig();
     const currentSource = sources.find(s => s.id === config.defaultSource) || sources[0];
+    const currentLang = config.language === "en" ? "English" : "Türkçe";
 
     console.clear();
-    console.log(chalk.bgCyan.black(` Ayarlar `) + chalk.gray(` v${pkg.version}`));
+    console.log(chalk.bgCyan.black(` ${t("settings.title")} `) + chalk.gray(` v${pkg.version}`));
     console.log();
 
     const { action } = await inquirer.prompt([{
         type: "list",
         name: "action",
-        message: 'Neyi değiştirmek istersin?',
+        message: t("settings.whatToChange"),
         pageSize: 15,
         loop: false,
         choices: [
-            { name: `Anime Kaynağı (Mevcut: ${chalk.yellow(currentSource.name)})`, value: "defaultSource" },
-            { name: `Oynatıcı (Mevcut: ${chalk.yellow(config.defaultPlayer || "Seçilmedi")})`, value: "defaultPlayer" },
-            { name: `İndirme Yöneticisi (Aria2) (${chalk.yellow(config.useAria2 ? "Aktif" : "Pasif")})`, value: "aria2" },
-            ...(config.useAria2 ? [{ name: `   ↳ Aria2 Bağlantı Sayısı (Mevcut: ${chalk.yellow(config.aria2Connections)}x)`, value: "aria2Connections" }] : []),
-            { name: `Eşzamanlı İndirme Limiti (Mevcut: ${chalk.yellow(config.maxConcurrent)})`, value: "maxConcurrent" },
-            { name: `İndirme Konumu (Mevcut: ${chalk.yellow(config.downloadDir)})`, value: "downloadDir" },
-            { name: `İndirme Tekrarı (Mevcut: ${chalk.yellow(config.retryEnabled ? "Aktif" : "Pasif")})`, value: "retryToggle" },
-            ...(config.retryEnabled ? [{ name: `   ↳ Tekrar Ayarları (Mevcut: ${chalk.yellow(config.retryCount)}x / ${chalk.yellow(config.retryDelay / 1000)}sn)`, value: "retrySettings" }] : []),
-            { name: `Anime Detaylarını Göster (Mevcut: ${chalk.yellow(config.showAnimeDetails !== false ? "Aktif" : "Pasif")})`, value: "detailsToggle" },
-            { name: `Anilist Entegrasyonu (Durum: ${chalk.yellow(config.anilistUsername || "Bağlı Değil")})`, value: "anilist" },
-            ...(config.anilistToken ? [{ name: "   ↳ Bağlantıyı Kes", value: "anilistLogout" }] : []),
-            { name: `Telemetri (Anonim) (Durum: ${chalk.yellow(config.telemetryEnabled ? "Aktif" : "Pasif")})`, value: "telemetryToggle" },
+            { name: t("settings.language", { current: chalk.yellow(currentLang) }), value: "language" },
+            { name: t("settings.animeSource", { current: chalk.yellow(currentSource.name) }), value: "defaultSource" },
+            { name: t("settings.player", { current: chalk.yellow(config.defaultPlayer || t("settings.notSelected")) }), value: "defaultPlayer" },
+            { name: t("settings.aria2", { status: chalk.yellow(config.useAria2 ? t("settings.active") : t("settings.inactive")) }), value: "aria2" },
+            ...(config.useAria2 ? [{ name: t("settings.aria2Connections", { count: chalk.yellow(config.aria2Connections) }), value: "aria2Connections" }] : []),
+            { name: t("settings.concurrentLimit", { count: chalk.yellow(config.maxConcurrent) }), value: "maxConcurrent" },
+            { name: t("settings.downloadLocation", { path: chalk.yellow(config.downloadDir) }), value: "downloadDir" },
+            { name: t("settings.retryDownload", { status: chalk.yellow(config.retryEnabled ? t("settings.active") : t("settings.inactive")) }), value: "retryToggle" },
+            ...(config.retryEnabled ? [{ name: t("settings.retrySettings", { count: chalk.yellow(config.retryCount), delay: chalk.yellow(config.retryDelay / 1000) }), value: "retrySettings" }] : []),
+            { name: t("settings.showDetails", { status: chalk.yellow(config.showAnimeDetails !== false ? t("settings.active") : t("settings.inactive")) }), value: "detailsToggle" },
+            { name: t("settings.anilist", { status: chalk.yellow(config.anilistUsername || t("settings.notConnected")) }), value: "anilist" },
+            ...(config.anilistToken ? [{ name: t("settings.anilistLogout"), value: "anilistLogout" }] : []),
             new inquirer.Separator(),
-            { name: "Ana Menüye Dön", value: "back" }
+            { name: t("settings.backToMenu"), value: "back" }
         ]
     }]);
 
     if (action === "back") return;
 
+    if (action === "language") {
+        const { lang } = await inquirer.prompt([{
+            type: "list",
+            name: "lang",
+            message: t("settings.selectLanguage"),
+            choices: [
+                { name: t("settings.turkish"), value: "tr" },
+                { name: t("settings.english"), value: "en" }
+            ],
+            default: config.language || "tr"
+        }]);
+
+        config.language = lang;
+        setLanguage(lang);
+        saveConfig(config);
+        successBox(t("settings.languageUpdated"));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await showSettings();
+        return;
+    }
+
     if (action === "defaultSource") {
         const { source } = await inquirer.prompt([{
             type: "list",
             name: "source",
-            message: "Anime kaynağını seçin:",
+            message: t("settings.selectSource"),
             choices: sources.map(s => ({
-                name: `${s.name}${s.supportsLocalSearch ? chalk.gray(" (Gelişmiş arama)") : ""}`,
+                name: `${s.name}${s.supportsLocalSearch ? chalk.gray(` (${t("settings.advancedSearch")})`) : ""}`,
                 value: s.id
             })),
             default: config.defaultSource || "animely"
@@ -58,7 +81,7 @@ export async function showSettings() {
 
         config.defaultSource = source;
         saveConfig(config);
-        successBox("Anime kaynağı güncellendi.");
+        successBox(t("settings.sourceUpdated"));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -67,7 +90,7 @@ export async function showSettings() {
     if (action === "detailsToggle") {
         config.showAnimeDetails = config.showAnimeDetails === false ? true : false;
         saveConfig(config);
-        successBox(`Anime detay görünümü ${config.showAnimeDetails ? "etkinleştirildi" : "devre dışı bırakıldı"}.`);
+        successBox(config.showAnimeDetails ? t("settings.detailsEnabled") : t("settings.detailsDisabled"));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -78,7 +101,7 @@ export async function showSettings() {
         const { confirm } = await inquirer.prompt([{
             type: "confirm",
             name: "confirm",
-            message: "Anilist bağlantısını kesmek istediğinize emin misiniz?",
+            message: t("settings.anilistDisconnectConfirm"),
             default: false
         }]);
 
@@ -86,21 +109,12 @@ export async function showSettings() {
             config.anilistToken = undefined;
             config.anilistUsername = undefined;
             saveConfig(config);
-            console.log(chalk.yellow("\nAnilist bağlantısı kesildi."));
+            console.log(chalk.yellow("\n" + t("settings.anilistDisconnected")));
         } else {
-            console.log(chalk.gray("İşlem iptal edildi."));
+            console.log(chalk.gray(t("settings.operationCancelled")));
         }
 
         await new Promise(resolve => setTimeout(resolve, 1500));
-        await showSettings();
-        return;
-    }
-
-    if (action === "telemetryToggle") {
-        config.telemetryEnabled = !config.telemetryEnabled;
-        saveConfig(config);
-        successBox(`Telemetri ${config.telemetryEnabled ? "etkinleştirildi" : "devre dışı bırakıldı"}.`);
-        await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
     }
@@ -113,19 +127,19 @@ export async function showSettings() {
 
         try {
             const token = await authenticate();
-            spinner.start("Token doğrulanıyor...");
+            spinner.start(t("anilist.verifying"));
             const username = await verifyToken(token);
             spinner.stop();
 
             if (username) {
                 config.anilistToken = token;
                 config.anilistUsername = username;
-                console.log(chalk.green(`\nGiriş başarılı! Hoş geldiniz, ${username}.`));
+                console.log(chalk.green(`\n${t("anilist.loginSuccess", { username })}`));
             } else {
-                console.log(chalk.red("\nToken alındı ancak doğrulama başarısız oldu."));
+                console.log(chalk.red("\n" + t("anilist.verifyFailed")));
             }
         } catch (error) {
-            console.log(chalk.red("\nGiriş yapılamadı: " + error.message));
+            console.log(chalk.red("\n" + t("anilist.loginFailed", { message: error.message })));
         }
         await new Promise(resolve => setTimeout(resolve, 2000));
         saveConfig(config);
@@ -138,37 +152,37 @@ export async function showSettings() {
         const { player } = await inquirer.prompt([{
             type: "list",
             name: "player",
-            message: "Varsayılan oynatıcıyı seçin:",
+            message: t("settings.selectPlayer"),
             choices: [
-                { name: "MPV Player (Önerilen - Kaldığı yerden devam desteği)", value: "mpv" },
-                { name: "VLC Media Player", value: "vlc" }
+                { name: t("setup.mpvWithResume"), value: "mpv" },
+                { name: t("setup.vlcPlayer"), value: "vlc" }
             ],
             default: config.defaultPlayer || "mpv"
         }]);
 
         if (!commandExists(player)) {
-            console.log(chalk.yellow(`\nUyarı: ${player} sistemde bulunamadı.`));
+            console.log(chalk.yellow(`\n${t("settings.playerNotFound", { player })}`));
             const { install } = await inquirer.prompt([{
                 type: "confirm",
                 name: "install",
-                message: "Otomatik olarak yüklemek ister misiniz?",
+                message: t("settings.autoInstallPrompt"),
                 default: true
             }]);
 
             if (install) {
-                console.log(chalk.yellow("Yükleme başlatılıyor, lütfen bekleyin..."));
+                console.log(chalk.yellow(t("settings.installingPlayer")));
                 const success = installPackage(player);
                 if (success) {
-                    console.log(chalk.green(`\n${player} başarıyla yüklendi!`));
+                    console.log(chalk.green(`\n${t("settings.playerInstalled", { player })}`));
                 } else {
-                    console.log(chalk.red("\nYükleme başarısız oldu. Yine de oynatıcı olarak seçildi."));
+                    console.log(chalk.red("\n" + t("settings.installFailed")));
                 }
             }
         }
 
         config.defaultPlayer = player;
         saveConfig(config);
-        successBox("Varsayılan oynatıcı güncellendi.");
+        successBox(t("settings.playerUpdated"));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -178,13 +192,13 @@ export async function showSettings() {
         const { limit } = await inquirer.prompt([{
             type: "number",
             name: "limit",
-            message: "Eşzamanlı indirme sayısı (1-10):",
+            message: t("settings.concurrentPrompt"),
             default: config.maxConcurrent,
-            validate: (input) => (input > 0 && input <= 10) ? true : "Lütfen 1 ile 10 arasında bir değer girin."
+            validate: (input) => (input > 0 && input <= 10) ? true : t("settings.concurrentValidation")
         }]);
         config.maxConcurrent = limit;
         saveConfig(config);
-        successBox("İndirme limiti güncellendi.");
+        successBox(t("settings.concurrentUpdated"));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -193,7 +207,7 @@ export async function showSettings() {
     if (action === "aria2") {
         config.useAria2 = !config.useAria2;
         saveConfig(config);
-        successBox(`Aria2 ${config.useAria2 ? "etkinleştirildi" : "devre dışı bırakıldı"}.`);
+        successBox(config.useAria2 ? t("settings.aria2Enabled") : t("settings.aria2Disabled"));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -203,13 +217,13 @@ export async function showSettings() {
         const { connections } = await inquirer.prompt([{
             type: "number",
             name: "connections",
-            message: "Aria2 bağlantı sayısı (1-32):",
+            message: t("settings.aria2ConnectionsPrompt"),
             default: config.aria2Connections || 16,
-            validate: (input) => (input > 0 && input <= 32) ? true : "Lütfen 1 ile 32 arasında bir değer girin."
+            validate: (input) => (input > 0 && input <= 32) ? true : t("settings.aria2ConnectionsValidation")
         }]);
         config.aria2Connections = connections;
         saveConfig(config);
-        successBox("Aria2 bağlantı sayısı güncellendi.");
+        successBox(t("settings.aria2ConnectionsUpdated"));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -220,13 +234,13 @@ export async function showSettings() {
         const { dir } = await inquirer.prompt([{
             type: "input",
             name: "dir",
-            message: "Yeni indirme konumu:",
+            message: t("settings.downloadDirPrompt"),
             default: config.downloadDir,
-            validate: (input) => input.trim() !== "" ? true : "Bu alan boş bırakılamaz."
+            validate: (input) => input.trim() !== "" ? true : t("settings.downloadDirValidation")
         }]);
         config.downloadDir = dir;
         saveConfig(config);
-        successBox("İndirme konumu güncellendi.");
+        successBox(t("settings.downloadDirUpdated"));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
@@ -234,7 +248,7 @@ export async function showSettings() {
 
     if (action === "retryToggle") {
         config.retryEnabled = !config.retryEnabled;
-        successBox(`İndirme tekrarı ${config.retryEnabled ? "etkinleştirildi" : "devre dışı bırakıldı"}.`);
+        successBox(config.retryEnabled ? t("settings.retryEnabled") : t("settings.retryDisabled"));
         await new Promise(resolve => setTimeout(resolve, 1000));
         saveConfig(config);
         await showSettings();
@@ -246,16 +260,16 @@ export async function showSettings() {
             {
                 type: "number",
                 name: "count",
-                message: "Maksimum tekrar deneme sayısı (0-10):",
+                message: t("settings.retryCountPrompt"),
                 default: config.retryCount,
-                validate: (input) => (input >= 0 && input <= 10) ? true : "Lütfen 0 ile 10 arasında bir değer girin."
+                validate: (input) => (input >= 0 && input <= 10) ? true : t("settings.retryCountValidation")
             },
             {
                 type: "number",
                 name: "delay",
-                message: "Tekrarlar arası bekleme süresi (saniye):",
+                message: t("settings.retryDelayPrompt"),
                 default: config.retryDelay / 1000,
-                validate: (input) => (input >= 0) ? true : "Lütfen pozitif bir değer girin."
+                validate: (input) => (input >= 0) ? true : t("settings.retryDelayValidation")
             }
         ]);
 
@@ -263,7 +277,7 @@ export async function showSettings() {
         config.retryDelay = delay * 1000;
 
         saveConfig(config);
-        successBox("Tekrar ayarları güncellendi.");
+        successBox(t("settings.retryUpdated"));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;
