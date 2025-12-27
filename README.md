@@ -63,6 +63,13 @@ yay -S animely
 paru -S animely
 ```
 
+## Kullanım
+
+```bash
+animely
+```
+
+
 ##  Web Versiyonu
 
 iOS ve Android cihazlarda web üzerinden de kolaycab kullanabilirsiniz: 
@@ -77,6 +84,7 @@ iOS ve Android cihazlarda web üzerinden de kolaycab kullanabilirsiniz:
 
 ### Gereksinimler
 
+
 #### CLI
 - **Node.js** v18+ 
 - **Video Oynatıcı:** MPV (önerilen) veya VLC
@@ -85,23 +93,6 @@ iOS ve Android cihazlarda web üzerinden de kolaycab kullanabilirsiniz:
 - **Discord hesabı**
 - **İnternet :D**
 
-## Kullanım
-
-```bash
-animely
-```
-
-
-## Ayarlar
-
-Ana menüden "Ayarlar" seçeneğine giderek:
-- Anime kaynağını değiştirebilirsiniz
-- Video oynatıcısını seçebilirsiniz
-- Eşzamanlı indirme sayısını ayarlayabilirsiniz
-- İndirme klasörünü özelleştirebilirsiniz
-- Anilist hesabınızı bağlayabilirsiniz
-
-> Ayarlar `~/.animely/` klasöründe saklanır.
 
 ## Katkıda Bulunun
 
