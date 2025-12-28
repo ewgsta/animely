@@ -3,6 +3,7 @@
  * @typedef {Object} Source
  * @property {string} name
  * @property {string} id
+ * @property {string} [language] - Kaynak dili: "tr" | "en"
  * @property {boolean} supportsLocalSearch - Lokal fuzzy search destekliyor mu
  * @property {() => Promise<import("../jsdoc.js").Anime[]>} [getAnimeList] - Tüm anime listesi (lokal search için)
  * @property {(query: string) => Promise<SearchResult[]>} search - Anime arama
@@ -37,11 +38,13 @@
 
 import { AnimelySource } from "./animely.js";
 import { AnimecixSource } from "./animecix.js";
+import { AllAnimeSource } from "./allanime.js";
 
 /** @type {Source[]} */
 export const sources = [
 	new AnimelySource(),
-	new AnimecixSource()
+	new AnimecixSource(),
+	new AllAnimeSource()
 ];
 
 /**
@@ -57,4 +60,23 @@ export function getSourceById(id) {
  */
 export function getDefaultSource() {
 	return sources[0];
+}
+
+/**
+ * Dile göre kaynakları filtrele
+ * @param {string} language - "tr" | "en"
+ * @returns {Source[]}
+ */
+export function getSourcesByLanguage(language) {
+	return sources.filter(s => s.language === language);
+}
+
+/**
+ * Belirli bir dil için varsayılan kaynağı getir
+ * @param {string} language - "tr" | "en"
+ * @returns {Source}
+ */
+export function getDefaultSourceForLanguage(language) {
+	const filtered = getSourcesByLanguage(language);
+	return filtered[0] || sources[0];
 }

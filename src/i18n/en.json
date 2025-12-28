@@ -177,6 +177,8 @@
     "player": "Player (Current: {current})",
     "aria2": "Download Manager (Aria2) ({status})",
     "aria2Connections": "   ↳ Aria2 Connection Count (Current: {count}x)",
+    "ytDlp": "M3U8 Download Manager (yt-dlp) ({status})",
+    "ytDlpConnections": "   ↳ yt-dlp Connection Count (Current: {count}x)",
     "concurrentLimit": "Concurrent Download Limit (Current: {count})",
     "downloadLocation": "Download Location (Current: {path})",
     "retryDownload": "Download Retry (Current: {status})",
@@ -215,6 +217,11 @@
     "aria2ConnectionsPrompt": "Aria2 connection count (1-32):",
     "aria2ConnectionsValidation": "Please enter a value between 1 and 32.",
     "aria2ConnectionsUpdated": "Aria2 connection count updated.",
+    "ytDlpEnabled": "yt-dlp enabled (M3U8 downloads accelerated).",
+    "ytDlpDisabled": "yt-dlp disabled (FFmpeg will be used).",
+    "ytDlpConnectionsPrompt": "yt-dlp connection count (1-32):",
+    "ytDlpConnectionsValidation": "Please enter a value between 1 and 32.",
+    "ytDlpConnectionsUpdated": "yt-dlp connection count updated.",
     "downloadDirPrompt": "New download location:",
     "downloadDirValidation": "This field cannot be empty.",
     "downloadDirUpdated": "Download location updated.",
@@ -265,6 +272,7 @@
     "uploadingSpeed": "Loading: {downloaded} - {speed}/s",
     "progressBar": "[{bar}] {percent}% ({downloaded} / {total}) - {speed}/s - Remaining: {eta}",
     "aria2Progress": "[{bar}] {percent}% - Speed: {speed}",
+    "ytDlpProgress": "[{bar}] {percent}% - Speed: {speed} - ETA: {eta}",
     "processingPercent": "Processing: {percent}% ({downloaded})"
   },
   "errors": {
@@ -305,7 +313,15 @@
     "mpvInstallFailedMac": "MPV installation failed. Please install manually or make sure Homebrew is installed.",
     "mpvNotFoundAndFailed": "MPV Player not found and could not be installed.",
     "mpvPathNotFound": "MPV Player file path not found.",
-    "managerDetected": "{manager} detected. Starting installation (sudo may be required)..."
+    "managerDetected": "{manager} detected. Starting installation (sudo may be required)...",
+    "ytDlpStarting": "Starting download with yt-dlp (fast mode)...",
+    "ytDlpFailed": "yt-dlp failed, falling back to FFmpeg...",
+    "ytDlpError": "yt-dlp closed with error code: {code}",
+    "ytDlpStartFailed": "Failed to start yt-dlp: {message}",
+    "ytDlpNotFound": "yt-dlp not found. Required for M3U8 downloads.",
+    "ytDlpInstalling": "Installing yt-dlp automatically...",
+    "ytDlpInstalled": "yt-dlp installed successfully!",
+    "ytDlpInstallFailed": "yt-dlp installation failed. FFmpeg will be used."
   },
   "common": {
     "yes": "Yes",
@@ -326,5 +342,10 @@
   },
   "discord": {
     "download": "Download"
+  },
+  "allanime": {
+    "selectAudioType": "Select audio type:",
+    "subbed": "Subbed",
+    "dubbed": "Dubbed"
   }
 }

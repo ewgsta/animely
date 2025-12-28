@@ -52,7 +52,6 @@ export async function resumeWatch(anime, nextEpisodeNumber) {
     const config = getConfig();
     const player = config.defaultPlayer || "vlc";
 
-    // MPV için kaldığı yerden devam özelliği
     let startPosition = 0;
     if (player === "mpv") {
         const savedProgress = getWatchPosition(anime.NAME, nextEpisodeNumber);

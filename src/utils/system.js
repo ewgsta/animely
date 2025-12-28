@@ -42,6 +42,12 @@ const PACKAGES = {
         win: "Gyan.FFmpeg",
         mac: "ffmpeg",
         linux: "ffmpeg"
+    },
+    "yt-dlp": {
+        cmd: "yt-dlp",
+        win: "yt-dlp.yt-dlp",
+        mac: "yt-dlp",
+        linux: "yt-dlp"
     }
 };
 
@@ -82,6 +88,12 @@ export function commandExists(program) {
                 if (program === 'aria2') {
                     if (require('fs').existsSync('C:\\ProgramData\\chocolatey\\bin\\aria2c.exe')) return true;
                     if (require('fs').existsSync(`${process.env.USERPROFILE}\\scoop\\apps\\aria2\\current\\aria2c.exe`)) return true;
+                }
+
+                if (program === 'yt-dlp') {
+                    if (require('fs').existsSync('C:\\ProgramData\\chocolatey\\bin\\yt-dlp.exe')) return true;
+                    if (require('fs').existsSync(`${process.env.USERPROFILE}\\scoop\\apps\\yt-dlp\\current\\yt-dlp.exe`)) return true;
+                    if (require('fs').existsSync(`${process.env.LOCALAPPDATA}\\Microsoft\\WinGet\\Packages\\yt-dlp.yt-dlp_Microsoft.Winget.Source_8wekyb3d8bbwe\\yt-dlp.exe`)) return true;
                 }
 
                 return false;

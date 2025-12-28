@@ -175,6 +175,8 @@
     "player": "Oynatıcı (Mevcut: {current})",
     "aria2": "İndirme Yöneticisi (Aria2) ({status})",
     "aria2Connections": "   ↳ Aria2 Bağlantı Sayısı (Mevcut: {count}x)",
+    "ytDlp": "M3U8 İndirme Yöneticisi (yt-dlp) ({status})",
+    "ytDlpConnections": "   ↳ yt-dlp Bağlantı Sayısı (Mevcut: {count}x)",
     "concurrentLimit": "Eşzamanlı İndirme Limiti (Mevcut: {count})",
     "downloadLocation": "İndirme Konumu (Mevcut: {path})",
     "retryDownload": "İndirme Tekrarı (Mevcut: {status})",
@@ -213,6 +215,11 @@
     "aria2ConnectionsPrompt": "Aria2 bağlantı sayısı (1-32):",
     "aria2ConnectionsValidation": "Lütfen 1 ile 32 arasında bir değer girin.",
     "aria2ConnectionsUpdated": "Aria2 bağlantı sayısı güncellendi.",
+    "ytDlpEnabled": "yt-dlp etkinleştirildi (M3U8 indirmeleri hızlandırıldı).",
+    "ytDlpDisabled": "yt-dlp devre dışı bırakıldı (FFmpeg kullanılacak).",
+    "ytDlpConnectionsPrompt": "yt-dlp bağlantı sayısı (1-32):",
+    "ytDlpConnectionsValidation": "Lütfen 1 ile 32 arasında bir değer girin.",
+    "ytDlpConnectionsUpdated": "yt-dlp bağlantı sayısı güncellendi.",
     "downloadDirPrompt": "Yeni indirme konumu:",
     "downloadDirValidation": "Bu alan boş bırakılamaz.",
     "downloadDirUpdated": "İndirme konumu güncellendi.",
@@ -262,6 +269,7 @@
     "uploadingSpeed": "Yükleniyor: {downloaded} - {speed}/s",
     "progressBar": "[{bar}] {percent}% ({downloaded} / {total}) - {speed}/s - Kalan: {eta}",
     "aria2Progress": "[{bar}] {percent}% - Hız: {speed}",
+    "ytDlpProgress": "[{bar}] {percent}% - Hız: {speed} - Kalan: {eta}",
     "processingPercent": "İşleniyor: {percent}% ({downloaded})"
   },
   "errors": {
@@ -302,7 +310,15 @@
     "mpvInstallFailedMac": "MPV kurulumu başarısız oldu. Lütfen manuel olarak kurunuz veya Homebrew'in yüklü olduğundan emin olun.",
     "mpvNotFoundAndFailed": "MPV Player bulunamadı ve kurulamadı.",
     "mpvPathNotFound": "MPV Player dosya yolu bulunamadı.",
-    "managerDetected": "{manager} tespit edildi. Kurulum başlatılıyor (sudo gerekebilir)..."
+    "managerDetected": "{manager} tespit edildi. Kurulum başlatılıyor (sudo gerekebilir)...",
+    "ytDlpStarting": "yt-dlp ile indirme başlatılıyor (hızlı mod)...",
+    "ytDlpFailed": "yt-dlp başarısız oldu, FFmpeg'e geçiliyor...",
+    "ytDlpError": "yt-dlp hata kodu ile kapandı: {code}",
+    "ytDlpStartFailed": "yt-dlp başlatılamadı: {message}",
+    "ytDlpNotFound": "yt-dlp bulunamadı. M3U8 indirmeleri için gerekli.",
+    "ytDlpInstalling": "yt-dlp otomatik olarak kuruluyor...",
+    "ytDlpInstalled": "yt-dlp başarıyla kuruldu!",
+    "ytDlpInstallFailed": "yt-dlp kurulumu başarısız oldu. FFmpeg kullanılacak."
   },
   "common": {
     "yes": "Evet",
@@ -323,5 +339,10 @@
   },
   "discord": {
     "download": "İndir"
+  },
+  "allanime": {
+    "selectAudioType": "Ses türünü seçin:",
+    "subbed": "Altyazılı (Sub)",
+    "dubbed": "Dublajlı (Dub)"
   }
 }

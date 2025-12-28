@@ -9,13 +9,16 @@ import ffmpeg from "fluent-ffmpeg";
 import ffmpegPath from "ffmpeg-static";
 import { spawn } from "child_process";
 import { getConfig } from "../storage/config.js";
+import { commandExists, installPackage } from "../system.js";
 import { t } from "../../i18n/index.js";
 
 // @ts-ignore
 ffmpeg.setFfmpegPath(ffmpegPath);
 
+/** @type {boolean|null} */
+let ytDlpAvailable = null;
+
 /**
- *
  * @param {string} url
  * @param {string} outputPath
  * @param {{ silent?: boolean, onProgress?: (data: { percent: string, downloaded: number, total: number, speed: number, eta: number }) => void }} [options]
@@ -310,6 +313,41 @@ async function downloadM3U8(url, outputPath, options = { silent: false }) {
 		return;
 	}
 
+	const config = getConfig();
+	
+	if (config.useYtDlp) {
+		if (ytDlpAvailable === null) {
+			ytDlpAvailable = commandExists("yt-dlp");
+			
+			if (!ytDlpAvailable) {
+				if (!options.silent) {
+					console.log(chalk.yellow("\n" + t("errors.ytDlpNotFound")));
+					console.log(chalk.cyan(t("errors.ytDlpInstalling")));
+				}
+				
+				const installed = installPackage("yt-dlp");
+				if (installed) {
+					ytDlpAvailable = true;
+					if (!options.silent) console.log(chalk.green(t("errors.ytDlpInstalled")));
+				} else {
+					ytDlpAvailable = false;
+					if (!options.silent) console.log(chalk.yellow(t("errors.ytDlpInstallFailed")));
+				}
+			}
+		}
+		
+		if (ytDlpAvailable) {
+			try {
+				await downloadM3U8WithYtDlp(url, outputPath, options);
+				return;
+			} catch (error) {
+				if (!options.silent) {
+					console.log(chalk.yellow("\n" + t("errors.ytDlpFailed")));
+				}
+			}
+		}
+	}
+
 	if (!options.silent) console.log(chalk.cyan("\n" + t("errors.m3u8Processing")));
 
 	return new Promise((resolve, reject) => {
@@ -342,6 +380,83 @@ async function downloadM3U8(url, outputPath, options = { silent: false }) {
 			.outputOptions('-c copy')
 			.outputOptions('-bsf:a aac_adtstoasc')
 			.save(fullPath);
+	});
+}
+
+/**
+ * @param {string} url 
+ * @param {string} outputPath 
+ * @param {{ silent?: boolean, onProgress?: (data: { percent: string, downloaded: number, total: number, speed: number, eta: number }) => void }} [options]
+ */
+async function downloadM3U8WithYtDlp(url, outputPath, options = { silent: false }) {
+	const fullPath = `${outputPath}.mp4`;
+	const config = getConfig();
+	const connections = String(config.ytDlpConnections || 16);
+
+	if (!options.silent) console.log(chalk.cyan("\n" + t("errors.ytDlpStarting")));
+
+	return new Promise((resolve, reject) => {
+		const ytDlp = spawn("yt-dlp", [
+			"--no-warnings",
+			"--no-playlist",
+			"-N", connections,
+			"--fragment-retries", "infinite",
+			"--no-skip-unavailable-fragments",
+			"-o", fullPath,
+			url
+		]);
+
+		ytDlp.stdout.on("data", (data) => {
+			const output = data.toString();
+			
+			// Progress parsing: [download]  45.2% of ~50.00MiB at 2.50MiB/s ETA 00:15
+			const progressMatch = output.match(/\[download\]\s+(\d+\.?\d*)%/);
+			const speedMatch = output.match(/at\s+([\d.]+\s*\w+\/s)/);
+			const etaMatch = output.match(/ETA\s+(\d+:\d+)/);
+
+			if (progressMatch) {
+				const percent = progressMatch[1];
+				const speed = speedMatch ? speedMatch[1] : "";
+				const eta = etaMatch ? etaMatch[1] : "";
+
+				if (options.onProgress) {
+					options.onProgress({ percent, downloaded: 0, total: 0, speed: 0, eta: 0 });
+				}
+
+				if (!options.silent) {
+					const barLength = 30;
+					const percentNum = parseFloat(percent);
+					const filledLength = Math.floor((percentNum / 100) * barLength);
+					const progressBar = "█".repeat(filledLength) + "░".repeat(barLength - filledLength);
+					const out = t("progress.ytDlpProgress", { bar: progressBar, percent, speed, eta });
+					process.stdout.write(`\x1b[2K\x1b[0G${chalk.gray(out)}`);
+				}
+			}
+		});
+
+		ytDlp.stderr.on("data", (data) => {
+			const output = data.toString();
+			const progressMatch = output.match(/\[download\]\s+(\d+\.?\d*)%/);
+			if (progressMatch && options.onProgress) {
+				options.onProgress({ percent: progressMatch[1], downloaded: 0, total: 0, speed: 0, eta: 0 });
+			}
+		});
+
+		ytDlp.on("close", (code) => {
+			if (code === 0) {
+				if (!options.silent) {
+					process.stdout.write("\n");
+					console.log(chalk.green(t("errors.downloadCompleted", { path: fullPath })));
+				}
+				resolve();
+			} else {
+				reject(new Error(t("errors.ytDlpError", { code })));
+			}
+		});
+
+		ytDlp.on("error", (err) => {
+			reject(new Error(t("errors.ytDlpStartFailed", { message: err.message })));
+		});
 	});
 }
 

@@ -3,7 +3,7 @@ import { spinner } from "./utils/spinner.js";
 import { getConfig, saveConfig } from "./utils/storage/config.js";
 import { loadQueue, saveQueue } from "./utils/storage/queue.js";
 import { initDiscordRpc, setActivity } from "./utils/discord.js";
-import { sources, getSourceById } from "./sources/index.js";
+import { sources, getSourceById, getSourcesByLanguage, getDefaultSourceForLanguage } from "./sources/index.js";
 import { infoBox } from "./utils/ui/box.js";
 
 import { showSettings } from "./utils/ui/settings_ui.js";
@@ -68,7 +68,17 @@ if (notifier.update) {
 			setLanguage(config.language);
 		}
 		
-		const currentSource = getSourceById(config.defaultSource) || sources[0];
+		// Dile göre kaynakları filtrele ve mevcut kaynağı kontrol et
+		const currentLang = config.language || "tr";
+		const availableSources = getSourcesByLanguage(currentLang);
+		let currentSource = getSourceById(config.defaultSource);
+		
+		// Eğer mevcut kaynak bu dilde yoksa, varsayılan kaynağı kullan
+		if (!currentSource || currentSource.language !== currentLang) {
+			currentSource = availableSources[0] || sources[0];
+			config.defaultSource = currentSource.id;
+			saveConfig(config);
+		}
 
 		let animes = null;
 		if (currentSource.supportsLocalSearch && currentSource.getAnimeList) {
@@ -106,6 +116,11 @@ if (notifier.update) {
 
 			config.language = language;
 			setLanguage(language);
+			
+			// Dile göre varsayılan kaynağı ayarla
+			const defaultSource = getDefaultSourceForLanguage(language);
+			config.defaultSource = defaultSource.id;
+			
 			saveConfig(config);
 		}
 
@@ -174,7 +189,14 @@ if (notifier.update) {
 			setActivity(t("menu.browsingMenu"));
 
 			const currentConfig = getConfig();
-			const activeSource = getSourceById(currentConfig.defaultSource) || sources[0];
+			const currentLangInLoop = currentConfig.language || "tr";
+			const availableSourcesInLoop = getSourcesByLanguage(currentLangInLoop);
+			let activeSource = getSourceById(currentConfig.defaultSource);
+			
+			// Kaynak dil uyumsuzluğu kontrolü
+			if (!activeSource || activeSource.language !== currentLangInLoop) {
+				activeSource = availableSourcesInLoop[0] || sources[0];
+			}
 
 			console.log(chalk.bgCyan.black(` ${t("app.title")} `) + chalk.gray(` v${pkg.version} | ${activeSource.name}`));
 

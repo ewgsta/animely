@@ -2,7 +2,6 @@
   <img src="https://raw.githubusercontent.com/ewgsta/animely/main/docs/img/phee.png" alt="Animely-chan" width="200">
 </div>
 
-  
 <p align="center">
   <a href="https://www.npmjs.com/package/animely">
     <img src="https://img.shields.io/npm/v/animely.svg" alt="npm version">
@@ -13,21 +12,30 @@
   <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">
     <img src="https://img.shields.io/badge/license-CC%20BY--NC--ND%204.0-blue.svg" alt="License">
   </a>
+</p>
 
+<p align="center">
   <strong>Terminaliniz üzerinden anime izlemenizi ve indirmenizi sağlayan güçlü, şık ve basit bir CLI aracı.</strong>
 </p>
 
+<p align="center">
+  <a href="README-EN.md">🇬🇧 English</a>
+</p>
 
 ## Özellikler
 
-- **Çoklu Kaynak Desteği:** Animely.net ve Animecix.tv kaynaklarından anime izleyebilirsiniz
+- **Çoklu Kaynak Desteği:** Türkçe (Animely.net, Animecix.tv) ve İngilizce (AllAnime) kaynaklar
+- **Çoklu Dil:** Türkçe ve İngilizce arayüz desteği
+- **Dil Bazlı Kaynak Filtreleme:** Seçtiğiniz dile göre otomatik kaynak filtreleme
+- **Sub/Dub Desteği:** AllAnime'de altyazılı veya dublajlı izleme seçeneği
 - **Anında İzleme:** VLC veya MPV ile doğrudan streaming
 - **Kaldığı Yerden Devam:** MPV ile izlerken kaldığınız dakikayı otomatik hatırlar
-- **Kalite Seçimi:** Animecix'te 480p/720p/1080p seçenekleri
+- **Kalite Seçimi:** Animecix ve AllAnime'de çoklu kalite seçenekleri
 - **Anilist Entegrasyonu:** İzlediğiniz animeleri otomatik olarak Anilist'e ekleyin
 - **Discord Rich Presence:** Ne izlediğiniz Discord profilinizde görünsün
 - **Akıllı İndirme:** Kaldığı yerden devam, kuyruk sistemi, eşzamanlı indirme
-- **Aria2 Desteği:** 16x bağlantı ile hızlı indirme
+- **Aria2 Desteği:** MP4 indirmelerinde 16x bağlantı ile hızlı indirme
+- **yt-dlp Desteği:** M3U8 indirmelerinde paralel bağlantı ile hızlı indirme
 - **Son İzlenen İşaretleme:** Bölüm listesinde son izlediğiniz ve sıradaki bölüm işaretli
 
 ## Görseller
@@ -42,10 +50,11 @@
 
 ## Desteklenen Kaynaklar
 
-| Kaynak | Arama | İzleme | İndirme | Kalite Seçimi |
-|--------|-------|--------|---------|---------------|
-| Animely.net | ✅ Fuzzy Search | ✅ | ✅ | ❌ |
-| Animecix.tv | ✅ API Search | ✅ | ✅ | ✅ 480p/720p/1080p |
+| Kaynak | Dil | Arama | İzleme | İndirme | Kalite Seçimi | Sub/Dub |
+|--------|-----|-------|--------|---------|---------------|---------|
+| Animely.net | 🇹🇷 Türkçe | ✅ Fuzzy Search | ✅ | ✅ | - | - |
+| Animecix.tv | 🇹🇷 Türkçe | ✅ API Search | ✅ | ✅ | ✅ 480p/720p/1080p | - |
+| AllAnime | 🇬🇧 İngilizce | ✅ API Search | ✅ | ✅ | ✅ Çoklu | ✅ |
 
 ## Kurulum
 
@@ -69,10 +78,17 @@ paru -S animely
 animely
 ```
 
+## İndirme Yöneticileri
 
-##  Web Versiyonu
+### Aria2 (MP4 için)
+MP4 dosyaları için hızlı indirme. Ayarlardan etkinleştirin, otomatik kurulur.
 
-iOS ve Android cihazlarda web üzerinden de kolaycab kullanabilirsiniz: 
+### yt-dlp (M3U8 için)
+M3U8/HLS stream'leri için hızlı indirme. Ayarlardan etkinleştirin, otomatik kurulur.
+
+## Web Versiyonu
+
+iOS ve Android cihazlarda web üzerinden de kolayca kullanabilirsiniz:
 
 | Animely | Web |
 |-------|-------|
@@ -80,23 +96,21 @@ iOS ve Android cihazlarda web üzerinden de kolaycab kullanabilirsiniz:
 
 **[animely.ewgsta.me](https://animely.ewgsta.me)**
 
+## Gereksinimler
 
-
-### Gereksinimler
-
-
-#### CLI
-- **Node.js** v18+ 
+### CLI
+- **Node.js** v18+
 - **Video Oynatıcı:** MPV (önerilen) veya VLC
 
-#### Web
-- **Discord hesabı**
-- **İnternet :D**
+### Opsiyonel
+- **Aria2:** Hızlı MP4 indirme (otomatik kurulur)
+- **yt-dlp:** Hızlı M3U8 indirme (otomatik kurulur)
 
+### Web
+- **Discord hesabı**
+- **İnternet**
 
 ## Katkıda Bulunun
-
-Projeye katkıda bulunmak isterseniz:
 
 1. Fork'layın
 2. Feature branch oluşturun (`git checkout -b yeni-ozellik`)
@@ -122,8 +136,7 @@ pnpm start
 
 Bu proje [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)](https://creativecommons.org/licenses/by-nc-nd/4.0/) lisansı ile lisanslanmıştır.
 
-Bu lisans altında:
 - **Paylaş:** Eseri her ortam veya formatta kopyalayabilir ve yeniden dağıtabilirsiniz.
 - **Atıf:** Uygun referans vermeli, lisansa bağlantı sağlamalı ve değişiklik yapıldıysa bilgi vermelisiniz.
 - **Ticari Olmayan:** Bu materyali ticari amaçlarla kullanamazsınız.
-- **Türetilemez:** Eğer materyali karıştırır, aktarır veya üzerine inşa ederseniz, değiştirilmiş materyali dağıtamazsınız.
+- **Türetilemez:** Değiştirilmiş materyali dağıtamazsınız.

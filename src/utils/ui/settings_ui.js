@@ -6,7 +6,7 @@ import { successBox } from "./box.js";
 import { authenticate, verifyToken } from "../anilist.js";
 import { spinner } from "../spinner.js";
 import { commandExists, installPackage } from "../system.js";
-import { sources } from "../../sources/index.js";
+import { sources, getSourcesByLanguage } from "../../sources/index.js";
 import { t, setLanguage } from "../../i18n/index.js";
 
 const pkg = JSON.parse(fs.readFileSync(new URL("./../../../package.json", import.meta.url), "utf-8"));
@@ -32,6 +32,8 @@ export async function showSettings() {
             { name: t("settings.player", { current: chalk.yellow(config.defaultPlayer || t("settings.notSelected")) }), value: "defaultPlayer" },
             { name: t("settings.aria2", { status: chalk.yellow(config.useAria2 ? t("settings.active") : t("settings.inactive")) }), value: "aria2" },
             ...(config.useAria2 ? [{ name: t("settings.aria2Connections", { count: chalk.yellow(config.aria2Connections) }), value: "aria2Connections" }] : []),
+            { name: t("settings.ytDlp", { status: chalk.yellow(config.useYtDlp !== false ? t("settings.active") : t("settings.inactive")) }), value: "ytDlp" },
+            ...(config.useYtDlp !== false ? [{ name: t("settings.ytDlpConnections", { count: chalk.yellow(config.ytDlpConnections || 16) }), value: "ytDlpConnections" }] : []),
             { name: t("settings.concurrentLimit", { count: chalk.yellow(config.maxConcurrent) }), value: "maxConcurrent" },
             { name: t("settings.downloadLocation", { path: chalk.yellow(config.downloadDir) }), value: "downloadDir" },
             { name: t("settings.retryDownload", { status: chalk.yellow(config.retryEnabled ? t("settings.active") : t("settings.inactive")) }), value: "retryToggle" },
@@ -60,6 +62,13 @@ export async function showSettings() {
 
         config.language = lang;
         setLanguage(lang);
+        
+        const availableSources = getSourcesByLanguage(lang);
+        const currentSourceValid = availableSources.some(s => s.id === config.defaultSource);
+        if (!currentSourceValid && availableSources.length > 0) {
+            config.defaultSource = availableSources[0].id;
+        }
+        
         saveConfig(config);
         successBox(t("settings.languageUpdated"));
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -68,15 +77,18 @@ export async function showSettings() {
     }
 
     if (action === "defaultSource") {
+        const currentLangCode = config.language || "tr";
+        const availableSources = getSourcesByLanguage(currentLangCode);
+
         const { source } = await inquirer.prompt([{
             type: "list",
             name: "source",
             message: t("settings.selectSource"),
-            choices: sources.map(s => ({
+            choices: availableSources.map(s => ({
                 name: `${s.name}${s.supportsLocalSearch ? chalk.gray(` (${t("settings.advancedSearch")})`) : ""}`,
                 value: s.id
             })),
-            default: config.defaultSource || "animely"
+            default: config.defaultSource || availableSources[0]?.id
         }]);
 
         config.defaultSource = source;
@@ -224,6 +236,31 @@ export async function showSettings() {
         config.aria2Connections = connections;
         saveConfig(config);
         successBox(t("settings.aria2ConnectionsUpdated"));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await showSettings();
+        return;
+    }
+
+    if (action === "ytDlp") {
+        config.useYtDlp = config.useYtDlp === false ? true : false;
+        saveConfig(config);
+        successBox(config.useYtDlp ? t("settings.ytDlpEnabled") : t("settings.ytDlpDisabled"));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await showSettings();
+        return;
+    }
+
+    if (action === "ytDlpConnections") {
+        const { connections } = await inquirer.prompt([{
+            type: "number",
+            name: "connections",
+            message: t("settings.ytDlpConnectionsPrompt"),
+            default: config.ytDlpConnections || 16,
+            validate: (input) => (input > 0 && input <= 32) ? true : t("settings.ytDlpConnectionsValidation")
+        }]);
+        config.ytDlpConnections = connections;
+        saveConfig(config);
+        successBox(t("settings.ytDlpConnectionsUpdated"));
         await new Promise(resolve => setTimeout(resolve, 1000));
         await showSettings();
         return;

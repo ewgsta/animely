@@ -17,6 +17,7 @@ export class AnimecixSource {
 	constructor() {
 		this.name = "Animecix";
 		this.id = "animecix";
+		this.language = "tr";
 		this.supportsLocalSearch = false;
 	}
 
@@ -128,14 +129,11 @@ export class AnimecixSource {
 				validateStatus: () => true
 			});
 
-			// Final URL'i al
 			const finalUrl = response.request?.res?.responseUrl || response.request?.responseURL || fullUrl;
 			
-			// URL'den embed_id ve vid'i çıkar
 			const urlObj = new URL(finalUrl);
 			const pathParts = urlObj.pathname.split("/").filter(p => p);
 			
-			// Path: /e/EMBED_ID veya /embed/EMBED_ID gibi olabilir
 			let embedId = null;
 			for (let i = 0; i < pathParts.length; i++) {
 				if (pathParts[i] === "e" || pathParts[i] === "embed") {
@@ -144,7 +142,6 @@ export class AnimecixSource {
 				}
 			}
 			
-			// Eğer bulunamazsa, path'in son kısmını dene
 			if (!embedId && pathParts.length >= 2) {
 				embedId = pathParts[pathParts.length - 1];
 			}
@@ -156,7 +153,6 @@ export class AnimecixSource {
 
 			const vid = urlObj.searchParams.get("vid");
 
-			// Video API'sine istek at
 			const apiUrl = `https://${VIDEO_PLAYER}/api/video/${embedId}${vid ? `?vid=${vid}` : ""}`;
 			
 			const apiResponse = await axios.get(apiUrl, { 
@@ -181,7 +177,6 @@ export class AnimecixSource {
 	}
 
 	/**
-	 * Film için izleme linki
 	 * @param {string} titleId
 	 * @returns {Promise<import("./index.js").StreamLink[]>}
 	 */
@@ -209,17 +204,14 @@ export class AnimecixSource {
 	}
 
 	/**
-	 * İzleme linkleri
 	 * @param {any} episodeData
 	 * @returns {Promise<import("./index.js").StreamLink[]>}
 	 */
 	async getStreamLinks(episodeData) {
-		// Film ise
 		if (episodeData._isMovie) {
 			return this._getMovieStreamLinks(episodeData._animeId);
 		}
 
-		// Dizi bölümü - _url'i kullan
 		const videoUrl = episodeData._url;
 		if (!videoUrl) {
 			console.log("Episode URL not found:", episodeData);

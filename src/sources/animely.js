@@ -4,17 +4,17 @@ import { API_URL } from "../constants.js";
 import { getCachedAnimeList, saveAnimeListToCache } from "../utils/storage/cache.js";
 
 /**
- * Animely.net kaynağı - Lokal fuzzy search destekler
+ * Animely.net
  */
 export class AnimelySource {
 	constructor() {
 		this.name = "Animely";
 		this.id = "animely";
+		this.language = "tr";
 		this.supportsLocalSearch = true;
 	}
 
 	/**
-	 * Tüm anime listesini getirir (lokal search için)
 	 * @returns {Promise<import("../jsdoc.js").Anime[]>}
 	 */
 	async getAnimeList() {
@@ -28,7 +28,6 @@ export class AnimelySource {
 	}
 
 	/**
-	 * Anime arama (lokal fuzzy search kullanılır)
 	 * @param {string} query
 	 * @returns {Promise<import("./index.js").SearchResult[]>}
 	 */
@@ -36,14 +35,12 @@ export class AnimelySource {
 		const animes = await this.getAnimeList();
 		const lowerQuery = query.toLowerCase().trim();
 
-		// Exact match
 		let results = animes.filter(({ NAME, OTHER_NAMES }) => {
 			const lowerName = NAME.toLowerCase();
 			const lowerOthers = OTHER_NAMES.map(n => n.toLowerCase());
 			return lowerName === lowerQuery || lowerOthers.includes(lowerQuery);
 		});
 
-		// Partial match
 		if (results.length === 0) {
 			results = animes.filter(({ NAME, OTHER_NAMES }) => {
 				const lowerName = NAME.toLowerCase();
@@ -52,7 +49,6 @@ export class AnimelySource {
 			});
 		}
 
-		// Fuzzy match
 		if (results.length === 0) {
 			results = animes.filter(({ NAME, OTHER_NAMES }) => {
 				const allNames = [NAME, ...OTHER_NAMES].map(n => n.toLowerCase());
@@ -67,13 +63,11 @@ export class AnimelySource {
 			poster: anime.FIRST_IMAGE,
 			totalEpisodes: anime.TOTAL_EPISODES,
 			otherNames: anime.OTHER_NAMES,
-			// Orijinal veriyi sakla
 			_raw: anime
 		}));
 	}
 
 	/**
-	 * Bölüm listesi
 	 * @param {string} animeSlug
 	 * @returns {Promise<import("./index.js").Episode[]>}
 	 */
@@ -92,7 +86,6 @@ export class AnimelySource {
 	}
 
 	/**
-	 * İzleme linkleri
 	 * @param {any} episodeData
 	 * @returns {Promise<import("./index.js").StreamLink[]>}
 	 */

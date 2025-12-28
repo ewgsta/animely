@@ -6,8 +6,6 @@ package-lock.json
 aur-animely/
 
 # Animely Helper
-animely-telemetry/
-src/telemetry/index.js.dev.js
-
-# Gizli Proje hehe :3
 animely-web/
+
+yeni/

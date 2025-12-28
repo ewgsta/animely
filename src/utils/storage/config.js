@@ -15,11 +15,13 @@ const defaultConfig = {
 	maxConcurrent: 3,
 	downloadDir: path.join(process.cwd(), "animely-downloads"),
 	defaultPlayer: "", // "vlc" | "mpv"
-	defaultSource: "animely", // "animely" | "animecix"
+	defaultSource: "animely", // "animely" | "animecix" | "allanime"
 	retryCount: 3,
 	retryDelay: 3000,
 	useAria2: false,
 	aria2Connections: 16,
+	useYtDlp: false,
+	ytDlpConnections: 16,
 	retryEnabled: true,
 	showAnimeDetails: true,
 	language: "" // "tr" | "en"
@@ -35,6 +37,8 @@ const defaultConfig = {
  * @property {number} retryDelay
  * @property {boolean} useAria2
  * @property {number} aria2Connections
+ * @property {boolean} useYtDlp
+ * @property {number} ytDlpConnections
  * @property {boolean} retryEnabled
  * @property {string} [anilistToken]
  * @property {string} [anilistUsername]
