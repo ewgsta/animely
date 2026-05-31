@@ -1,0 +1,11 @@
+# Node Dependencies
+node_modules/
+package-lock.json
+
+# AUR
+aur-animely/
+
+# Animely Helper
+animely-web/
+
+yeni/
